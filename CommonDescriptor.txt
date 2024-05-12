@@ -34,6 +34,9 @@
 		
 	# Create Component Form Data
 		ng generate component formData		
+		
+	# Create a new service for your app
+		ng generate service tasks --skip-tests
 			
 # COMANDOS PROD (frontend-tasks)
 

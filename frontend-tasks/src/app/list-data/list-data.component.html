@@ -5,5 +5,10 @@
 	</form>
 </section>
 <section class="results">
-	<p>list-data works!</p>
+	<p *ngFor="let entityData of listEntityData">
+		<a [routerLink]="['form', entityData?.idEntityData]">
+			{{entityData?.idEntityData}}, {{entityData?.rawData}}
+		</a>
+		<a [routerLink]="['form', 'delete', entityData?.idEntityData]">DELETE</a>
+	</p>
 </section>
