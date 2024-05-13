@@ -8,6 +8,12 @@ export class AreaService {
 
 	constructor() { }
 
+	createArea(rawData: string, highlighted: boolean) {
+		console.log(
+			`Area: rawData: ${rawData}, highlighted: ${highlighted}.`,
+		);
+	}
+
 	listDtoArea: DtoArea[] = [{
 		idArea: 1,
 		rawData: 'my text 1',
@@ -29,7 +35,7 @@ export class AreaService {
 	findAll(): DtoArea[] {
 		return this.listDtoArea;
 	}
-	
+
 	findById(idArea: number): DtoArea | undefined {
 		return this.listDtoArea.find((dtoArea) => dtoArea.idArea === idArea);
 	}

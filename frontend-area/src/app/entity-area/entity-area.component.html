@@ -1,2 +1,8 @@
-<p>idArea: {{dtoArea?.idArea}}</p>
-<p>rawData: {{dtoArea?.rawData}}</p>
+<h2 class="section-heading">Add New Area</h2>
+<form [formGroup]="formArea" (submit)="createArea()">
+	<label for="rawData">rawData</label>
+	<input id="rawData" type="text" formControlName="rawData" />
+	<label for="highlighted">highlighted</label>
+	<input id="highlighted" type="text" formControlName="highlighted" />
+	<button type="submit" class="primary">Create Area</button>
+</form>
