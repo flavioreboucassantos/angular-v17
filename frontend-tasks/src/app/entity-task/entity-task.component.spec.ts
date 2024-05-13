@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FormDataComponent } from './form-data.component';
+import { EntityTaskComponent } from './entity-task.component';
 
-describe('FormDataComponent', () => {
-  let component: FormDataComponent;
-  let fixture: ComponentFixture<FormDataComponent>;
+describe('EntityTaskComponent', () => {
+  let component: EntityTaskComponent;
+  let fixture: ComponentFixture<EntityTaskComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormDataComponent]
+      imports: [EntityTaskComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(FormDataComponent);
+    fixture = TestBed.createComponent(EntityTaskComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

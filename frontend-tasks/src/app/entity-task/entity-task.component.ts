@@ -2,28 +2,28 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TasksService } from '../tasks.service';
 
-export interface EntityData {
-	idEntityData: number;
+export interface DtoTask {
+	idTask: number;
 	rawData: string;
 	highlighted: boolean;
 }
 
 @Component({
-	selector: 'app-form-data',
+	selector: 'app-entity-task',
 	standalone: true,
 	imports: [],
-	templateUrl: './form-data.component.html',
-	styleUrl: './form-data.component.css'
+	templateUrl: './entity-task.component.html',
+	styleUrl: './entity-task.component.css'
 })
-export class FormDataComponent {
+export class EntityTaskComponent {
 
 	route: ActivatedRoute = inject(ActivatedRoute);
 	tasksService: TasksService = inject(TasksService);
 
-	entityData: EntityData | undefined;
+	dtoTask: DtoTask | undefined;
 
 	constructor() {
-		this.entityData = this.tasksService.findById(Number(this.route.snapshot.params['id']));
+		this.dtoTask = this.tasksService.findById(Number(this.route.snapshot.params['id']));
 	}
 
 }

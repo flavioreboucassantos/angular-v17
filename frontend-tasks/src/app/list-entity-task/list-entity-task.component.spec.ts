@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ListDataComponent } from './list-data.component';
+import { ListEntityTask } from './list-entity-task.component';
 
-describe('ListDataComponent', () => {
-  let component: ListDataComponent;
-  let fixture: ComponentFixture<ListDataComponent>;
+describe('ListEntityTaskComponent', () => {
+  let component: ListEntityTask;
+  let fixture: ComponentFixture<ListEntityTask>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ListDataComponent]
+      imports: [ListEntityTask]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(ListDataComponent);
+    fixture = TestBed.createComponent(ListEntityTask);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

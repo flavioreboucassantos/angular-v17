@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
-import { FormDataComponent } from './form-data/form-data.component';
+import { EntityTaskComponent } from './entity-task/entity-task.component';
 
 export const routes: Routes = [
 	{
@@ -10,12 +10,12 @@ export const routes: Routes = [
 	},
 	{
 		path: 'form',
-		component: FormDataComponent,
+		component: EntityTaskComponent,
 		title: 'Add Data'		
 	},
 	{
 		path: 'form/:id',
-		component: FormDataComponent,
+		component: EntityTaskComponent,
 		title: 'View Data'
 	}
 ];
