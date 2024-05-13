@@ -1,0 +1,14 @@
+<section>
+	<form>
+		<input type="text" placeholder="Filter by text" />
+		<button class="primary" type="button">Search</button>
+	</form>
+</section>
+<section class="results">
+	<p *ngFor="let dtoArea of listDtoArea">
+		<a [routerLink]="['form', dtoArea?.idArea]">
+			{{dtoArea?.idArea}}, {{dtoArea?.rawData}}
+		</a>
+		<a [routerLink]="['form', 'delete', dtoArea?.idArea]">DELETE</a>
+	</p>
+</section>

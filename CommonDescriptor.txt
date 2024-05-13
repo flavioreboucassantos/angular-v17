@@ -10,10 +10,10 @@
 	# Install the latest version of Angular (Global)
 		npm install -g @angular/cli
 
-# COMANDOS DEV (frontend-tasks)
+# COMANDOS DEV (frontend-area)
 
 	# (A) Criar Projeto
-		ng new frontend-tasks	
+		ng new frontend-area	
 		
 	# (B) Incluir dependencias em projeto descompactado (.zip)
 		
@@ -23,22 +23,22 @@
 		
 	# Builds the application, Starts the development server, Watches the source files, Rebuilds the application as you make changes.
 		
-		cd frontend-tasks
+		cd frontend-area
 		ng serve --open # The --open flag opens a browser to http://localhost:4200
 		
 	# Create Component Home
 		ng generate component home
 		
-	# Create Component List Data
-		ng generate component listData
+	# Create Component Entity Area
+		ng generate component entityArea
 		
-	# Create Component Form Data
-		ng generate component formData		
+	# Create Component List Entity Area
+		ng generate component listEntityArea		
 		
 	# Create a new service for your app
-		ng generate service tasks --skip-tests
+		ng generate service area --skip-tests
 			
-# COMANDOS PROD (frontend-tasks)
+# COMANDOS PROD (frontend-area)
 
 	# Compila para Produção
-		ng build --output-path=../build-frontend-tasks --base-href="/tasks/"
+		ng build --output-path=../build-frontend-area --base-href="/area/"
