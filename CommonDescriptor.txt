@@ -37,6 +37,28 @@
 		
 	# Create a new service for your app
 		ng generate service area --skip-tests
+		
+	# Avoid CORS
+		
+		"To divert all calls for http://localhost:4200/area/api to a server running on http://localhost:8080/area/api, take the following steps."
+		
+		# Create a file proxy.conf.json in your project's src/ folder.
+		
+			# Add the following content to the new proxy file:
+			
+				{
+				  "/api": {
+					"target": "http://localhost:8080",
+					"secure": false
+				  }
+				}
+				
+		# (A) In the CLI configuration file, angular.json, add the proxyConfig option to the serve target:
+			architect -> serve -> configurations -> development -> + "proxyConfig": "src/proxy.conf.json"
+			
+		# (B) Start the development server with option --proxy-config
+			ng serve --proxy-config=src/proxy.conf.json
+		
 			
 # COMANDOS PROD (frontend-area)
 

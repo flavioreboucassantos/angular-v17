@@ -1,8 +1,22 @@
-<h2 class="section-heading">Add New Area</h2>
-<form [formGroup]="formArea" (submit)="createArea()">
-	<label for="rawData">rawData</label>
-	<input id="rawData" type="text" formControlName="rawData" />
-	<label for="highlighted">highlighted</label>
-	<input id="highlighted" type="text" formControlName="highlighted" />
-	<button type="submit" class="primary">Create Area</button>
+<form [formGroup]="formArea" (submit)="createArea()" class="pure-form pure-form-stacked">
+
+	<fieldset>
+
+		<legend>Area</legend>
+
+		<label for="rawData">Raw Data</label>
+		<input id="rawData" type="text" formControlName="rawData" />
+
+		<label for="uniqueData">Unique Data</label>
+		<input id="uniqueData" type="text" formControlName="uniqueData" />
+
+		<label for="highlighted" class="pure-checkbox">
+			<input id="highlighted" type="checkbox" formControlName="highlighted" /> Highlighted
+		</label>
+
+
+		<button type="submit" class="primary">Create Area</button>
+
+	</fieldset>
+
 </form>

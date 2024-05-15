@@ -1,23 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ListEntityArea } from './list-entity-area.component';
+import { ListEntityAreaComponent } from './list-entity-area.component';
 
 describe('ListEntityAreaComponent', () => {
-  let component: ListEntityArea;
-  let fixture: ComponentFixture<ListEntityArea>;
+	let component: ListEntityAreaComponent;
+	let fixture: ComponentFixture<ListEntityAreaComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ListEntityArea]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(ListEntityArea);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+	beforeEach(async () => {
+		await TestBed.configureTestingModule({
+			imports: [ListEntityAreaComponent]
+		})
+			.compileComponents();
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+		fixture = TestBed.createComponent(ListEntityAreaComponent);
+		component = fixture.componentInstance;
+		fixture.detectChanges();
+	});
+
+	it('should create', () => {
+		expect(component).toBeTruthy();
+	});
 });

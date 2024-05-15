@@ -11,7 +11,7 @@ export const routes: Routes = [
 	{
 		path: 'form',
 		component: EntityAreaComponent,
-		title: 'Add Data'		
+		title: 'Add Data'
 	},
 	{
 		path: 'form/:id',

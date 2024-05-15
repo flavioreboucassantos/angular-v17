@@ -1,14 +1,31 @@
 <section>
-	<form>
-		<input type="text" placeholder="Filter by text" />
-		<button class="primary" type="button">Search</button>
-	</form>
+	<input type="text" placeholder="Filter by text" #filter (keyup)="filterResults(filter.value)" (blur)="filterResults(filter.value)" />
+	<button class="primary" type="button" (click)="filterResults(filter.value)">Search</button>
 </section>
+
 <section class="results">
-	<p *ngFor="let dtoArea of listDtoArea">
-		<a [routerLink]="['form', dtoArea?.idArea]">
-			{{dtoArea?.idArea}}, {{dtoArea?.rawData}}
-		</a>
-		<a [routerLink]="['form', 'delete', dtoArea?.idArea]">DELETE</a>
-	</p>
+
+	<table>
+		<thead>
+			<tr>
+				<th>Id Area</th>
+				<th>Raw Data</th>
+				<th>Unique Data</th>
+				<th>Highlighted</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let dtoArea of filteredListDtoArea" (click)="openArea(dtoArea?.idArea)">
+				<th>{{dtoArea?.idArea}}</th>
+				<th>{{dtoArea?.rawData}}</th>
+				<td>{{dtoArea?.uniqueData}}</td>
+				<td>{{dtoArea?.highlighted}}</td>
+				<td>
+					<button type="button" (click)="removeArea(dtoArea?.idArea)">Delete</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
 </section>
