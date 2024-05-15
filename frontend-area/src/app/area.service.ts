@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
-import { DtoArea } from './entity-area/entity-area.component';
+import { Injectable } from '@angular/core';
 import { BaseService } from './base.service';
+import { DtoArea } from './entity-area/entity-area.component';
 
 @Injectable({
 	providedIn: 'root'
@@ -13,7 +13,7 @@ export class AreaService extends BaseService {
 		// 	location
 		// );
 		// console.log(
-		// 	this.baseUrlRestApi
+		// 	this.baseUrlRestApiSettedOrigin
 		// );
 	}
 
@@ -35,7 +35,11 @@ export class AreaService extends BaseService {
 	}
 
 	async fetchFindById(idArea: number): Promise<DtoArea | undefined> {
-		const data = await fetch(this.doPathParamRest(idArea));
-		return (await data.json()) ?? {};
+		if (isNaN(idArea)) {
+			return undefined;
+		} else {
+			const data = await fetch(this.doPathParamRest(idArea));
+			return (await data.json()) ?? {};
+		}
 	}
 }
