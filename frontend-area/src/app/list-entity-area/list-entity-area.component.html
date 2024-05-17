@@ -1,3 +1,5 @@
+<app-modal-actions-response></app-modal-actions-response>
+
 <section>
 	<input type="text" placeholder="Filter by text" #filter (keyup)="filterResults(filter.value)"
 		(blur)="filterResults(filter.value)" />
@@ -20,13 +22,13 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr *ngFor="let dtoArea of filteredListDtoArea" (click)="openArea(dtoArea?.idArea)">
+			<tr *ngFor="let dtoArea of filteredListDtoArea" (click)="openArea(dtoArea?.idArea)" id="idRowArea{{dtoArea?.idArea}}">
 				<td class="fit">{{dtoArea?.idArea}}</td>
 				<td>{{dtoArea?.rawData}}</td>
 				<td>{{dtoArea?.uniqueData}}</td>
 				<td>{{dtoArea?.highlighted}}</td>
 				<td class="fit">
-					<button class="delete" type="button" (click)="removeArea($event, dtoArea?.idArea ?? -1);$event.stopPropagation();">Delete</button>
+					<button class="delete" type="button" (click)="removeArea(dtoArea?.idArea ?? -1);$event.stopPropagation();">Delete</button>
 				</td>
 			</tr>
 		</tbody>

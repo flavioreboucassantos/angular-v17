@@ -33,7 +33,10 @@
 		ng generate component entityArea
 		
 	# Create Component List Entity Area
-		ng generate component listEntityArea		
+		ng generate component listEntityArea
+		
+	# Create Component Modal Actions Response
+		ng generate component modalActionsResponse
 		
 	# Create a new service for your app
 		ng generate service area --skip-tests

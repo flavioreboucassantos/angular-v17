@@ -25,20 +25,19 @@ export class AreaService extends BaseService {
 		};
 	}
 
-	createArea(formGroup: FormGroup, actionsResponseTyped: ActionsResponseTyped<DtoArea>) {
+	createArea(formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
 		const dtoArea: DtoArea = this.extractDto(formGroup);
-		this.post<DtoArea>(this.getRestApi(), dtoArea, actionsResponseTyped);
+		this.postXX(this.getRestApi(), dtoArea, actionsResponse);
+	}
+
+	updateArea(idArea: number, formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
+		const dtoArea: DtoArea = this.extractDto(formGroup);
+		this.updateXX(this.getRestApiPathParam(idArea), dtoArea, actionsResponse);
 	}
 
 	removeArea(idArea: number, actionsResponse: ActionsResponse) {
 		this.delete(this.getRestApiPathParam(idArea), actionsResponse);
 	}
-
-	updateArea(idArea: number, formGroup: FormGroup, actionsResponseTyped: ActionsResponseTyped<DtoArea>) {
-		const dtoArea: DtoArea = this.extractDto(formGroup);
-		this.update<DtoArea>(this.getRestApiPathParam(idArea), dtoArea, actionsResponseTyped);
-	}
-
 	async fetchFindAll(): Promise<DtoArea[]> {
 		const data = await fetch(this.getRestApi());
 		return (await data.json()) ?? [];

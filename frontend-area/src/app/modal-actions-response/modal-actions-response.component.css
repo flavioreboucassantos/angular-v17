@@ -1,0 +1,37 @@
+dialog.modal-actions-response {
+	animation: appear 350ms ease-in 1;
+	max-width: 500px;
+	min-width: 100px;
+}
+dialog.modal-actions-response.visible {
+	display: block;
+}
+
+dialog.modal-actions-response p.lead {
+	margin     : 0px 0px 8px 0px;
+	font-size  : large;
+	font-weight: bold;
+}
+
+dialog.modal-actions-response p.message {
+	margin: 0px 0px 60px 0px;
+}
+
+dialog.modal-actions-response label {
+	background   : skyblue;
+	color        : white;
+	padding      : .5em 1em;
+	border-radius: 4px;
+	cursor       : pointer;
+	display      : inline-block;
+	position     : inherit;
+	right        : 18px;
+	bottom       : 16px;
+}
+
+@keyframes appear {
+	0% {
+		opacity  : 0;
+		transform: translateY(-10px);
+	}
+}

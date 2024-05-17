@@ -1,8 +1,10 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AreaService } from '../area.service';
-import { BaseViewComponent, ViewExpected } from '../base.view-component';
 import { ActionsResponseTyped } from '../base.service';
+import { BaseViewComponent, ViewExpected } from '../base.view-component';
+import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
 export interface DtoArea {
 	idArea: number;
@@ -14,11 +16,13 @@ export interface DtoArea {
 @Component({
 	selector: 'app-entity-area',
 	standalone: true,
-	imports: [ReactiveFormsModule],
+	imports: [ReactiveFormsModule, ModalActionsResponseComponent],
 	templateUrl: './entity-area.component.html',
 	styleUrl: './entity-area.component.css'
 })
 export class EntityAreaComponent extends BaseViewComponent {
+
+	readonly modalActionsResponse: ModalActionsResponseComponent = new ModalActionsResponseComponent();
 
 	viewExpected?: ViewExpected;
 
@@ -65,23 +69,27 @@ export class EntityAreaComponent extends BaseViewComponent {
 	}
 
 	submit() {
-		const actionsResponseTyped: ActionsResponseTyped<DtoArea> = {
+		let idAreaCreated: number;
+		const actionsResponse: ActionsResponseTyped<DtoArea> = {
 			next: (value: DtoArea) => {
-				console.log("next: " + value);
+				idAreaCreated = value.idArea;
 			},
-			error: (error: any) => {
-				console.log("error: " + error);
+			error: (error: HttpErrorResponse) => {
+				this.modalActionsResponse.open('error:', this.extractErrorResponse(error));
 			},
 			complete: () => {
-				console.log("complete<-");
+				this.reloadWithPath(idAreaCreated);
 			}
 		}
 		switch (this.viewExpected) {
-			case ViewExpected.create:
-				this.areaService.createArea(this.formArea, actionsResponseTyped);
+			case ViewExpected.create:				
+				this.areaService.createArea(this.formArea, actionsResponse);
 				break;
 			case ViewExpected.updateById:
-				this.areaService.updateArea(this.idArea, this.formArea, actionsResponseTyped);
+				actionsResponse.complete = () => {
+					this.modalActionsResponse.open('Sucesso!', 'Área Atualizada.');
+				}
+				this.areaService.updateArea(this.idArea, this.formArea, actionsResponse);
 				break;
 		}
 	}

@@ -37,7 +37,7 @@ import { Observable } from "rxjs/internal/Observable";
  * 
  */
 export interface ActionsResponse {
-	next: (value: string) => void,
+	next: (value: any) => void,
 	error: (error: any) => void,
 	complete: () => void
 }
@@ -73,6 +73,7 @@ export abstract class BaseService {
 		// console.log(this.baseUrlRestApiSettedOrigin);		
 	}
 
+
 	getRestApi(): string {
 		return this.baseUrlRestApi
 	}
@@ -81,9 +82,30 @@ export abstract class BaseService {
 		return this.baseUrlRestApi + pathParam;
 	}
 
-	post<T>(url: string, dto: T, actionsResponseTyped: ActionsResponseTyped<T>) {
+	/**
+	 * 
+	 * XX means same Body Type Requesting and Responding.
+	 * 
+	 * @param url 
+	 * @param dto 
+	 * @param actionsResponse 
+	 */
+	postXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
 		const observableString: Observable<T> = this.httpClient.post<T>(url, dto, { observe: 'body', responseType: 'json' });
-		observableString.subscribe(actionsResponseTyped);
+		observableString.subscribe(actionsResponse);
+	}
+
+	/**
+	 * 
+	 * XX means same Body Type Requesting and Responding.
+	 * 
+	 * @param url 
+	 * @param dto 
+	 * @param actionsResponse 
+	 */
+	updateXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
+		const observableString: Observable<T> = this.httpClient.put<T>(url, dto, { observe: 'body', responseType: 'json' });
+		observableString.subscribe(actionsResponse);
 	}
 
 	delete(url: string, actionsResponse: ActionsResponse) {
@@ -91,9 +113,5 @@ export abstract class BaseService {
 		observableString.subscribe(actionsResponse);
 	}
 
-	update<T>(url: string, dto: T, actionsResponseTyped: ActionsResponseTyped<T>) {
-		const observableString: Observable<T> = this.httpClient.post<T>(url, dto, { observe: 'body', responseType: 'json' });
-		observableString.subscribe(actionsResponseTyped);
-	}
 
 }
