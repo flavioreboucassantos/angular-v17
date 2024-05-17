@@ -1,4 +1,4 @@
-<form [formGroup]="formArea" (submit)="createArea()" class="pure-form pure-form-stacked">
+<form [formGroup]="formArea" (submit)="submit()" class="pure-form pure-form-stacked">
 
 	<fieldset>
 
@@ -15,7 +15,9 @@
 		</label>
 
 
-		<button type="submit" class="primary">Create Area</button>
+		<button type="submit" class="primary">
+			{{ viewExpected == EnumViewExpected.create ? 'Criar Área' : 'Atualizar Área' }}
+		</button>
 
 	</fieldset>
 

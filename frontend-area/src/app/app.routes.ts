@@ -1,21 +1,27 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
+import { ViewExpected } from './base.view-component';
 import { EntityAreaComponent } from './entity-area/entity-area.component';
+import { HomeComponent } from './home/home.component';
 
+/**
+ * @author Flávio Rebouças Santos
+ */
 export const routes: Routes = [
 	{
 		path: '',
 		component: HomeComponent,
-		title: 'Home page'
+		title: 'Home Page'
 	},
 	{
-		path: 'form',
+		path: 'vr',
 		component: EntityAreaComponent,
-		title: 'Add Data'
+		title: 'Criar Área',
+		data: { viewExpected: ViewExpected.create }
 	},
 	{
-		path: 'form/:id',
+		path: 'vr/:id',
 		component: EntityAreaComponent,
-		title: 'View Data'
+		title: 'Editar Área',
+		data: { viewExpected: ViewExpected.updateById }
 	}
 ];

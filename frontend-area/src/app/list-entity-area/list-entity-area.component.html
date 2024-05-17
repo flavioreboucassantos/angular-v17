@@ -1,31 +1,39 @@
 <section>
-	<input type="text" placeholder="Filter by text" #filter (keyup)="filterResults(filter.value)" (blur)="filterResults(filter.value)" />
+	<input type="text" placeholder="Filter by text" #filter (keyup)="filterResults(filter.value)"
+		(blur)="filterResults(filter.value)" />
 	<button class="primary" type="button" (click)="filterResults(filter.value)">Search</button>
 </section>
 
 <section class="results">
 
-	<table>
+	<table class="list-entity-area">
+
+		<caption>Table 1.1 Areas</caption>
+
 		<thead>
 			<tr>
-				<th>Id Area</th>
+				<th class="fit">Id Area</th>
 				<th>Raw Data</th>
 				<th>Unique Data</th>
 				<th>Highlighted</th>
-				<th></th>
+				<th class="empty"></th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr *ngFor="let dtoArea of filteredListDtoArea" (click)="openArea(dtoArea?.idArea)">
-				<th>{{dtoArea?.idArea}}</th>
-				<th>{{dtoArea?.rawData}}</th>
+				<td class="fit">{{dtoArea?.idArea}}</td>
+				<td>{{dtoArea?.rawData}}</td>
 				<td>{{dtoArea?.uniqueData}}</td>
 				<td>{{dtoArea?.highlighted}}</td>
-				<td>
-					<button type="button" (click)="removeArea(dtoArea?.idArea)">Delete</button>
+				<td class="fit">
+					<button class="delete" type="button" (click)="removeArea($event, dtoArea?.idArea ?? -1);$event.stopPropagation();">Delete</button>
 				</td>
 			</tr>
 		</tbody>
 	</table>
 
+</section>
+
+<section>
+	<button class="primary" type="button" (click)="navigate(['/vr']);">Criar Área</button>
 </section>

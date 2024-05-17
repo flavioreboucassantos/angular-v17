@@ -61,7 +61,22 @@
 			
 		"If you get an ECONNREFUSED error using a proxy targeting a localhost URL,
 		you can fix this issue by updating the target from http://localhost:<port> to http://127.0.0.1:<port>."
+		
+	# HTTP: Setup for server communication
+	
+		"Before you can use HttpClient, you must add it to the application's root dependency injector.
+		Most apps do so in the providers array of ApplicationConfig in app.config.ts."
+		
+		import { ApplicationConfig } from '@angular/core';
+		import { HttpClientModule } from '@angular/common/http';
+		import { importProvidersFrom } from '@angular/core';
 
+		export const appConfig: ApplicationConfig = {
+			providers: [
+				importProvidersFrom(HttpClientModule),
+			]
+		};
+		
 	# Limpar cache do NPM 
 	
 		npm cache clear
