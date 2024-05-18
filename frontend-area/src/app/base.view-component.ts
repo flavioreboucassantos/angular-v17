@@ -3,7 +3,7 @@ import { inject } from "@angular/core";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 
 /**
- * @author Flávio Rebouças Santos
+ * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
  */
 
 export enum ViewExpected {

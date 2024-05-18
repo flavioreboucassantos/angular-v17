@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 
 import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
@@ -10,6 +10,9 @@ import { BaseViewComponent } from '../base.view-component';
 import { DtoArea } from '../entity-area/entity-area.component';
 
 
+/**
+ * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ */
 @Component({
 	selector: 'app-list-entity-area',
 	standalone: true,
@@ -19,12 +22,22 @@ import { DtoArea } from '../entity-area/entity-area.component';
 })
 export class ListEntityAreaComponent extends BaseViewComponent {
 
-	readonly modalActionsResponse: ModalActionsResponseComponent = new ModalActionsResponseComponent();
+	@ViewChild(ModalActionsResponseComponent) readonly modalActionsResponse?: ModalActionsResponseComponent;
 
 	readonly areaService: AreaService = inject(AreaService);
 
 	listDtoArea: DtoArea[] = [];
 	filteredListDtoArea: DtoArea[] = [];
+
+	private updateLists(idArea: number) {
+		this.filteredListDtoArea = this.listDtoArea.filter((dtoArea) => {
+			if (dtoArea?.idArea == idArea) return false;
+			return true;
+		});
+		this.listDtoArea = this.filteredListDtoArea;
+		console.log(this.listDtoArea);
+		console.log(this.filteredListDtoArea);
+	}
 
 	constructor() {
 		super();
@@ -43,10 +56,12 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 		if (this.isNumber(searchString)) {
 			this.filteredListDtoArea = this.listDtoArea.filter((dtoArea) => {
 				if (dtoArea?.idArea == Number(searchString)) return true;
+				if (dtoArea?.rawData?.indexOf(searchString) != -1) return true;
+				if (dtoArea?.uniqueData?.indexOf(searchString) != -1) return true;
 				return false;
 			});
 		} else {
-			let searchStringLC: string = searchString.toLowerCase();
+			const searchStringLC: string = searchString.toLowerCase();
 			this.filteredListDtoArea = this.listDtoArea.filter((dtoArea) => {
 				if (dtoArea?.rawData?.toLowerCase().indexOf(searchStringLC) != -1) return true;
 				if (dtoArea?.uniqueData?.toLowerCase().indexOf(searchStringLC) != -1) return true;
@@ -68,12 +83,12 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 			next: (value: string) => {
 			},
 			error: (error: HttpErrorResponse) => {
-				this.modalActionsResponse.open('error:', this.extractErrorResponse(error));
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
 				rowArea?.classList.remove('deleting');
 			},
 			complete: () => {
-				/*remove tr*/
 				rowArea?.remove();
+				this.updateLists(idArea);
 			}
 		}
 		this.areaService.removeArea(idArea, actionsResponse);

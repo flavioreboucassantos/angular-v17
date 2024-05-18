@@ -1,5 +1,6 @@
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { AfterContentInit, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AreaService } from '../area.service';
 import { ActionsResponseTyped } from '../base.service';
@@ -13,16 +14,19 @@ export interface DtoArea {
 	highlighted: boolean;
 }
 
+/**
+ * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ */
 @Component({
 	selector: 'app-entity-area',
 	standalone: true,
-	imports: [ReactiveFormsModule, ModalActionsResponseComponent],
+	imports: [CommonModule, ReactiveFormsModule, ModalActionsResponseComponent],
 	templateUrl: './entity-area.component.html',
 	styleUrl: './entity-area.component.css'
 })
-export class EntityAreaComponent extends BaseViewComponent {
+export class EntityAreaComponent extends BaseViewComponent implements AfterContentInit {
 
-	readonly modalActionsResponse: ModalActionsResponseComponent = new ModalActionsResponseComponent();
+	@ViewChild(ModalActionsResponseComponent) readonly modalActionsResponse?: ModalActionsResponseComponent;
 
 	viewExpected?: ViewExpected;
 
@@ -35,7 +39,6 @@ export class EntityAreaComponent extends BaseViewComponent {
 	});
 
 	idArea: number = -1;
-	dtoArea: DtoArea | undefined;
 
 	constructor() {
 		super();
@@ -46,10 +49,14 @@ export class EntityAreaComponent extends BaseViewComponent {
 			case ViewExpected.create:
 				this.viewCreate();
 				break;
+
 			case ViewExpected.updateById:
 				this.viewUpdateById();
 				break;
 		}
+	}
+
+	ngAfterContentInit(): void {
 	}
 
 	viewCreate() {
@@ -75,20 +82,22 @@ export class EntityAreaComponent extends BaseViewComponent {
 				idAreaCreated = value.idArea;
 			},
 			error: (error: HttpErrorResponse) => {
-				this.modalActionsResponse.open('error:', this.extractErrorResponse(error));
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
 			},
-			complete: () => {
-				this.reloadWithPath(idAreaCreated);
-			}
+			complete: () => { }
 		}
 		switch (this.viewExpected) {
-			case ViewExpected.create:				
+			case ViewExpected.create:
+				actionsResponse.complete = () =>
+					this.modalActionsResponse?.open(
+						'Sucesso!', 'Área Criada com Sucesso.',
+						() => this.reloadWithPath(idAreaCreated)
+					);
 				this.areaService.createArea(this.formArea, actionsResponse);
 				break;
+
 			case ViewExpected.updateById:
-				actionsResponse.complete = () => {
-					this.modalActionsResponse.open('Sucesso!', 'Área Atualizada.');
-				}
+				actionsResponse.complete = () => this.modalActionsResponse?.open('Sucesso!', 'Área Atualizada.');
 				this.areaService.updateArea(this.idArea, this.formArea, actionsResponse);
 				break;
 		}

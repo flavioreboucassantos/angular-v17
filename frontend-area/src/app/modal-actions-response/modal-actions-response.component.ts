@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
-import { delay } from 'rxjs';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 
 /**
- * @author Flávio Rebouças Santos
+ * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
  */
 
 @Component({
@@ -14,26 +13,25 @@ import { delay } from 'rxjs';
 })
 export class ModalActionsResponseComponent {
 
+	@ViewChild('boxDialog') boxDialog?: ElementRef<HTMLElement>;
+
+	visible: boolean = false;
+	textLead: string = '';
+	textMessage: string = '';
+
 	callback: (() => void) | undefined;
 
-	open(lead: string, message: string, callback?: (() => void)) {
+	open(textLead: string, textMessage: string, callback?: (() => void)) {
 		this.callback = callback;
-
-		const elLead: HTMLElement | null = document.getElementById('modal-actions-response-lead');
-		const elMessage: HTMLElement | null = document.getElementById('modal-actions-response-message');
-
-		if (elLead)
-			elLead.innerHTML = lead;
-		if (elMessage)
-			elMessage.innerHTML = message;
-
-		const wrapper: HTMLElement | null = document.getElementById('modal-actions-response');
-		wrapper?.classList.add('visible');
+		this.textLead = textLead;
+		this.textMessage = textMessage;
+		this.visible = true;
+		this.boxDialog?.nativeElement.focus();
 	}
 
 	close() {
-		const wrapper: HTMLElement | null = document.getElementById('modal-actions-response');
-		wrapper?.classList.remove('visible');
+		this.boxDialog?.nativeElement.blur();
+		this.visible = false;
 		if (this.callback) {
 			this.callback();
 			this.callback = undefined;

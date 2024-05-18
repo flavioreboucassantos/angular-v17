@@ -4,7 +4,7 @@ import { ActionsResponse, ActionsResponseTyped, BaseService } from './base.servi
 import { DtoArea } from './entity-area/entity-area.component';
 
 /**
- * @author Flávio Rebouças Santos
+ * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
  */
 
 @Injectable({
