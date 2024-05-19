@@ -5,7 +5,7 @@ import { ModalActionsResponseComponent } from '../modal-actions-response/modal-a
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { AreaService } from '../area.service';
-import { ActionsResponse, ActionsResponseTyped } from '../base.service';
+import { ActionsResponse, ActionsResponseTyped } from '../base.core';
 import { BaseViewComponent } from '../base.view-component';
 import { DtoArea } from '../entity-area/entity-area.component';
 
@@ -34,7 +34,7 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 			if (dtoArea?.idArea == idArea) return false;
 			return true;
 		});
-		this.listDtoArea = this.filteredListDtoArea;		
+		this.listDtoArea = this.filteredListDtoArea;
 	}
 
 	constructor() {

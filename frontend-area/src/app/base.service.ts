@@ -2,6 +2,7 @@ import { PlatformLocation } from "@angular/common";
 import { HttpClient } from '@angular/common/http';
 import { inject } from "@angular/core";
 import { Observable } from "rxjs/internal/Observable";
+import { ActionsResponse, ActionsResponseTyped, BaseCore, CoreDto } from "./base.core";
 
 /**
  * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
@@ -28,27 +29,16 @@ import { Observable } from "rxjs/internal/Observable";
 
 	Example:
 		some$.subscribe({  
-		next: x => console.log('The next value is: ', x),  
-		error: err => console.error('An error occurred :', err),  
-		complete: () => console.log('There are no more action happen.')  
+			next: x => console.log('The next value is: ', x),  
+			error: err => console.error('An error occurred :', err),  
+			complete: () => console.log('There are no more action happen.')  
 		});
 
-	So, Final and summary answer of your question is next get the latest value from the stream of Observable.
+	So, next get the latest value from the stream of Observable.
  * 
  */
-export interface ActionsResponse {
-	next: (value: any) => void,
-	error: (error: any) => void,
-	complete: () => void
-}
 
-export interface ActionsResponseTyped<T> {
-	next: (value: T) => void,
-	error: (error: any) => void,
-	complete: () => void
-}
-
-export abstract class BaseService {
+export abstract class BaseService extends BaseCore {
 
 	private readonly platformLocation: PlatformLocation = inject(PlatformLocation);
 
@@ -93,7 +83,9 @@ export abstract class BaseService {
 	 * @param dto 
 	 * @param actionsResponse 
 	 */
-	protected postXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
+	protected postXX<T>(url: string, dto: CoreDto, actionsResponse: ActionsResponse) {
+		if (!this.tryLockAndAppendUnlockOnComplete(dto, actionsResponse)) return;
+
 		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, dto, { observe: 'body', responseType: 'json' });
 		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
 	}
@@ -106,17 +98,20 @@ export abstract class BaseService {
 	 * @param dto 
 	 * @param actionsResponse 
 	 */
-	protected updateXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
-		const observableString: Observable<T> = this.httpClient.put<T>(url, dto, { observe: 'body', responseType: 'json' });
-		observableString.subscribe(actionsResponse);
+	protected updateXX<T>(url: string, dto: CoreDto, actionsResponse: ActionsResponse) {
+		if (!this.tryLockAndAppendUnlockOnComplete(dto, actionsResponse)) return;
+
+		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.put<T>(url, dto, { observe: 'body', responseType: 'json' });
+		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
 	}
 
 	protected delete(url: string, actionsResponse: ActionsResponse) {
-		const observableString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
-		observableString.subscribe(actionsResponse);
+		const observableStringOfResponseBodyInString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
+		observableStringOfResponseBodyInString.subscribe(actionsResponse);
 	}
 
 	constructor() {
+		super();
 		// console.log(location);
 		// console.log(this.platformLocation);
 		// console.log(this.baseUrlRestApiSettedOrigin);		

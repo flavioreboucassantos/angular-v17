@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
+import { BaseCore } from "./base.core";
 
 /**
  * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
@@ -10,7 +11,7 @@ export enum ViewExpected {
 	'create', 'updateById'
 }
 
-export abstract class BaseViewComponent {
+export abstract class BaseViewComponent extends BaseCore {
 
 	private readonly router: Router = inject(Router);
 	private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
@@ -18,7 +19,9 @@ export abstract class BaseViewComponent {
 	protected readonly EnumViewExpected = ViewExpected;
 
 	constructor() {
+		super();
 	}
+
 
 	isNumber(value?: string | number): boolean {
 		return ((value != null) &&

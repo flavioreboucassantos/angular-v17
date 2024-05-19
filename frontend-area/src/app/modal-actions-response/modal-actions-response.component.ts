@@ -30,7 +30,6 @@ export class ModalActionsResponseComponent {
 	}
 
 	close() {
-		this.buttonModalActionsResponse?.nativeElement.blur();
 		this.visible = false;
 		if (this.callback) {
 			this.callback();

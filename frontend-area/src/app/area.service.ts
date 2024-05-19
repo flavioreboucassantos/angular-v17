@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { ActionsResponse, ActionsResponseTyped, BaseService } from './base.service';
+import { ActionsResponse, ActionsResponseTyped } from './base.core';
+import { BaseService } from './base.service';
 import { DtoArea } from './entity-area/entity-area.component';
 
 /**
@@ -11,15 +11,6 @@ import { DtoArea } from './entity-area/entity-area.component';
 	providedIn: 'root'
 })
 export class AreaService extends BaseService {
-
-	protected extractDto(formGroup: FormGroup): DtoArea {
-		return {
-			idArea: -1,
-			rawData: formGroup.value.rawData ?? '',
-			uniqueData: formGroup.value.uniqueData ?? '',
-			highlighted: formGroup.value.highlighted ?? false
-		};
-	}
 
 	constructor() {
 		super();
@@ -33,14 +24,12 @@ export class AreaService extends BaseService {
 		this.get(this.getRestApiPathParam(idArea), actionsResponse);
 	}
 
-	create(formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
-		const dtoArea: DtoArea = this.extractDto(formGroup);
-		this.postXX(this.getRestApi(), dtoArea, actionsResponse);
+	create(dto: DtoArea, actionsResponse: ActionsResponseTyped<DtoArea>) {
+		this.postXX(this.getRestApi(), dto, actionsResponse);
 	}
 
-	update(idArea: number, formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
-		const dtoArea: DtoArea = this.extractDto(formGroup);
-		this.updateXX(this.getRestApiPathParam(idArea), dtoArea, actionsResponse);
+	update(idArea: number, dto: DtoArea, actionsResponse: ActionsResponseTyped<DtoArea>) {
+		this.updateXX(this.getRestApiPathParam(idArea), dto, actionsResponse);
 	}
 
 	remove(idArea: number, actionsResponse: ActionsResponse) {

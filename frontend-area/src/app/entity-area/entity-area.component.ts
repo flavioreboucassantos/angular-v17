@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterContentInit, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AreaService } from '../area.service';
-import { ActionsResponseTyped } from '../base.service';
+import { ActionsResponseTyped } from '../base.core';
 import { BaseViewComponent, ViewExpected } from '../base.view-component';
 import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
@@ -83,7 +83,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		this.areaService.findById(this.idArea, actionsResponse);
 	}
 
-	submit() {
+	doSubmit() {
 		let idAreaCreated: number;
 		const actionsResponse: ActionsResponseTyped<DtoArea> = {
 			next: (value: DtoArea) => {
@@ -93,8 +93,10 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
 			},
 			complete: () => {
+				// NOT USED - REWRITTED AFTER				
 			}
 		}
+		const dtoArea: DtoArea = this.tryExtract(this.formArea);
 		switch (this.viewExpected) {
 			case ViewExpected.create:
 				actionsResponse.complete = () => this.modalActionsResponse?.open(
@@ -102,13 +104,19 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 					'Área Criada com Sucesso.',
 					() => this.reloadWithPath(idAreaCreated)
 				);
-				this.areaService.create(this.formArea, actionsResponse);
+				this.areaService.create(dtoArea, actionsResponse);
 				break;
 
 			case ViewExpected.updateById:
 				actionsResponse.complete = () => this.modalActionsResponse?.open('Sucesso!', 'Área Atualizada.');
-				this.areaService.update(this.idArea, this.formArea, actionsResponse);
+				this.areaService.update(this.idArea, dtoArea, actionsResponse);
 				break;
 		}
+	}
+
+	submit() {
+		/* Teste de sincronia singlethread. */
+		for (let i = 0; i < 20; i++)
+			this.doSubmit();
 	}
 }
