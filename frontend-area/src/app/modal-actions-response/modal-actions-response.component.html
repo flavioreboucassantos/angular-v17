@@ -1,12 +1,18 @@
-<dialog #boxDialog class="modal-actions-response" [class.visible]="visible" (keyup.enter)="close()">
-	<p class="lead" [innerHTML]="textLead">
-		<!--My Lead-->
-	</p>
-	<p class="message" [innerHTML]="textMessage">
-		<!--Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa nihil dolore similique quis qui ad blanditiis ex eum! Enim
+<div class="toggle-modal-actions-response" [class.visible]="visible">
+	<div class="overlay-modal-actions-response">
+	</div>
+	<dialog class="modal-actions-response">
+		<p class="lead" [innerHTML]="textLead">
+			<!--My Lead-->
+		</p>
+		<p class="message" [innerHTML]="textMessage">
+			<!--Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa nihil dolore similique quis qui ad blanditiis ex eum! Enim
 		maiores ipsam fugiat officiis earum distinctio natus reprehenderit aliquam est iusto!
 		Lorem ipsum dolor sit amet consectetur adipisicing elit. Ipsa nihil dolore similique quis qui ad blanditiis ex eum! Enim
 		maiores ipsam fugiat officiis earum distinctio natus reprehenderit aliquam est iusto!-->
-	</p>
-	<label (click)="close()">Entendido</label>
-</dialog>
+		</p>
+
+		<button #buttonModalActionsResponse (keyup.enter)="close()">Entendido</button>
+		<label (click)="close()">Entendido</label>
+	</dialog>
+</div>

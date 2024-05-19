@@ -3,7 +3,7 @@ import { inject } from "@angular/core";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 
 /**
- * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
  */
 
 export enum ViewExpected {
@@ -12,10 +12,10 @@ export enum ViewExpected {
 
 export abstract class BaseViewComponent {
 
-	readonly router: Router = inject(Router);
-	readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+	private readonly router: Router = inject(Router);
+	private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
-	readonly EnumViewExpected = ViewExpected;
+	protected readonly EnumViewExpected = ViewExpected;
 
 	constructor() {
 	}
@@ -27,11 +27,15 @@ export abstract class BaseViewComponent {
 	}
 
 	reloadWithPath(path: any) {
-		this.router.navigate(['vr', path]);
+		this.router.navigate([path], { relativeTo: this.activatedRoute });
 	}
 
 	navigate(commands: any[], extras?: NavigationExtras) {
 		this.router.navigate(commands, extras);
+	}
+
+	getPathParam(pathParam: string): string {
+		return this.activatedRoute.snapshot.params[pathParam];
 	}
 
 	getViewExpected(): ViewExpected {

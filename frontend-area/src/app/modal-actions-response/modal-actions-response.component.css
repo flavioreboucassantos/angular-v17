@@ -1,23 +1,50 @@
-dialog.modal-actions-response {
-	animation: appear 350ms ease-in 1;
-	max-width: 500px;
-	min-width: 100px;
+/* Invisible Toggle Wrapper */
+.toggle-modal-actions-response {
+	display: none;
 }
-dialog.modal-actions-response.visible {
+
+.toggle-modal-actions-response.visible {
 	display: block;
 }
 
-dialog.modal-actions-response p.lead {
+/* Overlay */
+.overlay-modal-actions-response {
+	position        : fixed;
+	top             : 0;
+	left            : 0;
+	width           : 100vw;
+	height          : 100vh;
+	background-color: rgba(128, 128, 128, 0.5);
+	display         : inherit;
+}
+
+/* Modal */
+.modal-actions-response {
+	animation: appear 350ms ease-in 1;
+	max-width: 500px;
+	min-width: 100px;
+	display  : inherit;
+}
+
+/* Lead */
+.modal-actions-response p.lead {
 	margin     : 0px 0px 8px 0px;
 	font-size  : large;
 	font-weight: bold;
 }
 
-dialog.modal-actions-response p.message {
+/* Message */
+.modal-actions-response p.message {
 	margin: 0px 0px 60px 0px;
 }
 
-dialog.modal-actions-response label {
+/* Button */
+.modal-actions-response button {
+	opacity : 0;
+	position: absolute;
+}
+
+.modal-actions-response label {
 	background   : skyblue;
 	color        : white;
 	padding      : .5em 1em;

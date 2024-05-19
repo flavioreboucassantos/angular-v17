@@ -12,11 +12,7 @@ import { DtoArea } from './entity-area/entity-area.component';
 })
 export class AreaService extends BaseService {
 
-	constructor() {
-		super();
-	}
-
-	extractDto(formGroup: FormGroup): DtoArea {
+	protected extractDto(formGroup: FormGroup): DtoArea {
 		return {
 			idArea: -1,
 			rawData: formGroup.value.rawData ?? '',
@@ -25,27 +21,30 @@ export class AreaService extends BaseService {
 		};
 	}
 
-	createArea(formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
+	constructor() {
+		super();
+	}
+
+	findAll(actionsResponse: ActionsResponseTyped<DtoArea[]>) {
+		this.get(this.getRestApi(), actionsResponse);
+	}
+
+	findById(idArea: number, actionsResponse: ActionsResponseTyped<DtoArea>) {
+		this.get(this.getRestApiPathParam(idArea), actionsResponse);
+	}
+
+	create(formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
 		const dtoArea: DtoArea = this.extractDto(formGroup);
 		this.postXX(this.getRestApi(), dtoArea, actionsResponse);
 	}
 
-	updateArea(idArea: number, formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
+	update(idArea: number, formGroup: FormGroup, actionsResponse: ActionsResponseTyped<DtoArea>) {
 		const dtoArea: DtoArea = this.extractDto(formGroup);
 		this.updateXX(this.getRestApiPathParam(idArea), dtoArea, actionsResponse);
 	}
 
-	removeArea(idArea: number, actionsResponse: ActionsResponse) {
+	remove(idArea: number, actionsResponse: ActionsResponse) {
 		this.delete(this.getRestApiPathParam(idArea), actionsResponse);
-	}
-	async fetchFindAll(): Promise<DtoArea[]> {
-		const data = await fetch(this.getRestApi());
-		return (await data.json()) ?? [];
-	}
-
-	async fetchFindById(idArea: number | undefined): Promise<DtoArea | undefined> {
-		const data = await fetch(this.getRestApiPathParam(idArea));
-		return (await data.json()) ?? {};
 	}
 };
 

@@ -5,13 +5,13 @@ import { ModalActionsResponseComponent } from '../modal-actions-response/modal-a
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { AreaService } from '../area.service';
-import { ActionsResponse } from '../base.service';
+import { ActionsResponse, ActionsResponseTyped } from '../base.service';
 import { BaseViewComponent } from '../base.view-component';
 import { DtoArea } from '../entity-area/entity-area.component';
 
 
 /**
- * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
  */
 @Component({
 	selector: 'app-list-entity-area',
@@ -29,23 +29,29 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 	listDtoArea: DtoArea[] = [];
 	filteredListDtoArea: DtoArea[] = [];
 
-	private updateLists(idArea: number) {
+	private removeFromLists(idArea: number) {
 		this.filteredListDtoArea = this.listDtoArea.filter((dtoArea) => {
 			if (dtoArea?.idArea == idArea) return false;
 			return true;
 		});
-		this.listDtoArea = this.filteredListDtoArea;
-		console.log(this.listDtoArea);
-		console.log(this.filteredListDtoArea);
+		this.listDtoArea = this.filteredListDtoArea;		
 	}
 
 	constructor() {
 		super();
 
-		this.areaService.fetchFindAll().then((listDtoArea: DtoArea[]) => {
-			this.listDtoArea = listDtoArea;
-			this.filteredListDtoArea = listDtoArea;
-		});
+		const actionsResponse: ActionsResponseTyped<DtoArea[]> = {
+			next: (value: DtoArea[]) => {
+				this.listDtoArea = value;
+				this.filteredListDtoArea = value;
+			},
+			error: (error: HttpErrorResponse) => {
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
+			},
+			complete: () => {
+			}
+		}
+		this.areaService.findAll(actionsResponse);
 	}
 
 	filterResults(searchString: string) {
@@ -71,7 +77,7 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 	}
 
 	openArea(idArea: number | undefined) {
-		this.router.navigate(['vr', idArea]);
+		this.navigate(['vr', idArea]);
 	}
 
 
@@ -88,10 +94,10 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 			},
 			complete: () => {
 				rowArea?.remove();
-				this.updateLists(idArea);
+				this.removeFromLists(idArea);
 			}
 		}
-		this.areaService.removeArea(idArea, actionsResponse);
+		this.areaService.remove(idArea, actionsResponse);
 	}
 
 }

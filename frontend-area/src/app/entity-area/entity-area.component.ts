@@ -15,7 +15,7 @@ export interface DtoArea {
 }
 
 /**
- * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
  */
 @Component({
 	selector: 'app-entity-area',
@@ -28,7 +28,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	@ViewChild(ModalActionsResponseComponent) readonly modalActionsResponse?: ModalActionsResponseComponent;
 
-	viewExpected?: ViewExpected;
+	readonly viewExpected?: ViewExpected;
 
 	readonly areaService: AreaService = inject(AreaService);
 
@@ -63,16 +63,24 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	}
 
 	viewUpdateById() {
-		this.idArea = parseInt(this.activatedRoute.snapshot.params['id'], 10);
-		this.areaService.fetchFindById(this.idArea).then((dtoArea) => {
-			if (dtoArea)
-				this.formArea.setValue({
-					rawData: dtoArea.rawData,
-					uniqueData: dtoArea.uniqueData,
-					highlighted: dtoArea?.highlighted
-				});
+		this.idArea = parseInt(this.getPathParam('id'), 10);
+
+		const actionsResponse: ActionsResponseTyped<DtoArea> = {
+			next: (value: DtoArea) => {
+				if (value)
+					this.formArea.setValue({
+						rawData: value.rawData,
+						uniqueData: value.uniqueData,
+						highlighted: value?.highlighted
+					});
+			},
+			error: (error: HttpErrorResponse) => {
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
+			},
+			complete: () => { }
 		}
-		);
+
+		this.areaService.findById(this.idArea, actionsResponse);
 	}
 
 	submit() {
@@ -84,23 +92,23 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 			error: (error: HttpErrorResponse) => {
 				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
 			},
-			complete: () => { }
+			complete: () => {
+			}
 		}
 		switch (this.viewExpected) {
 			case ViewExpected.create:
-				actionsResponse.complete = () =>
-					this.modalActionsResponse?.open(
-						'Sucesso!', 'Área Criada com Sucesso.',
-						() => this.reloadWithPath(idAreaCreated)
-					);
-				this.areaService.createArea(this.formArea, actionsResponse);
+				actionsResponse.complete = () => this.modalActionsResponse?.open(
+					'Sucesso!',
+					'Área Criada com Sucesso.',
+					() => this.reloadWithPath(idAreaCreated)
+				);
+				this.areaService.create(this.formArea, actionsResponse);
 				break;
 
 			case ViewExpected.updateById:
 				actionsResponse.complete = () => this.modalActionsResponse?.open('Sucesso!', 'Área Atualizada.');
-				this.areaService.updateArea(this.idArea, this.formArea, actionsResponse);
+				this.areaService.update(this.idArea, this.formArea, actionsResponse);
 				break;
 		}
 	}
-
 }

@@ -4,7 +4,7 @@ import { inject } from "@angular/core";
 import { Observable } from "rxjs/internal/Observable";
 
 /**
- * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
  */
 
 /**
@@ -67,51 +67,59 @@ export abstract class BaseService {
 
 	private readonly httpClient: HttpClient = inject(HttpClient);
 
-	constructor() {
-		// console.log(location);
-		// console.log(this.platformLocation);
-		// console.log(this.baseUrlRestApiSettedOrigin);		
-	}
-
-
-	getRestApi(): string {
+	protected getRestApi(): string {
 		return this.baseUrlRestApi
 	}
 
-	getRestApiPathParam(pathParam: number | undefined): string {
+	protected getRestApiPathParam(pathParam: number): string {
 		return this.baseUrlRestApi + pathParam;
 	}
 
 	/**
 	 * 
-	 * XX means same Body Type Requesting and Responding.
-	 * 
 	 * @param url 
-	 * @param dto 
 	 * @param actionsResponse 
 	 */
-	postXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
-		const observableString: Observable<T> = this.httpClient.post<T>(url, dto, { observe: 'body', responseType: 'json' });
-		observableString.subscribe(actionsResponse);
+	protected get<T>(url: string, actionsResponse: ActionsResponseTyped<T>) {
+		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.get<T>(url, { observe: 'body', responseType: 'json' });
+		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
 	}
 
 	/**
 	 * 
-	 * XX means same Body Type Requesting and Responding.
+	 * XX means Same Body Type for Requesting and Responding.
 	 * 
 	 * @param url 
 	 * @param dto 
 	 * @param actionsResponse 
 	 */
-	updateXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
+	protected postXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
+		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, dto, { observe: 'body', responseType: 'json' });
+		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
+	}
+
+	/**
+	 * 
+	 * XX means Same Body Type for Requesting and Responding.
+	 * 
+	 * @param url 
+	 * @param dto 
+	 * @param actionsResponse 
+	 */
+	protected updateXX<T>(url: string, dto: T, actionsResponse: ActionsResponse) {
 		const observableString: Observable<T> = this.httpClient.put<T>(url, dto, { observe: 'body', responseType: 'json' });
 		observableString.subscribe(actionsResponse);
 	}
 
-	delete(url: string, actionsResponse: ActionsResponse) {
+	protected delete(url: string, actionsResponse: ActionsResponse) {
 		const observableString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
 		observableString.subscribe(actionsResponse);
 	}
 
+	constructor() {
+		// console.log(location);
+		// console.log(this.platformLocation);
+		// console.log(this.baseUrlRestApiSettedOrigin);		
+	}
 
 }

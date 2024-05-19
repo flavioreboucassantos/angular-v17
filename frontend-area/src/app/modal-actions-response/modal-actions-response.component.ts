@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 /**
- * @author Flávio Rebouças Santos flavioReboucasSantos@gmail.com
+ * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
  */
 
 @Component({
@@ -13,7 +13,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 })
 export class ModalActionsResponseComponent {
 
-	@ViewChild('boxDialog') boxDialog?: ElementRef<HTMLElement>;
+	@ViewChild('buttonModalActionsResponse') buttonModalActionsResponse?: ElementRef<HTMLElement>;
 
 	visible: boolean = false;
 	textLead: string = '';
@@ -22,15 +22,15 @@ export class ModalActionsResponseComponent {
 	callback: (() => void) | undefined;
 
 	open(textLead: string, textMessage: string, callback?: (() => void)) {
-		this.callback = callback;
+		if (callback) this.callback = callback;
 		this.textLead = textLead;
 		this.textMessage = textMessage;
 		this.visible = true;
-		this.boxDialog?.nativeElement.focus();
+		this.buttonModalActionsResponse?.nativeElement.focus();
 	}
 
 	close() {
-		this.boxDialog?.nativeElement.blur();
+		this.buttonModalActionsResponse?.nativeElement.blur();
 		this.visible = false;
 		if (this.callback) {
 			this.callback();
