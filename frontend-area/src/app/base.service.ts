@@ -2,7 +2,7 @@ import { PlatformLocation } from "@angular/common";
 import { HttpClient } from '@angular/common/http';
 import { inject } from "@angular/core";
 import { Observable } from "rxjs/internal/Observable";
-import { ActionsResponse, ActionsResponseTyped, BaseCore, CoreDto } from "./base.core";
+import { ActionsResponse, ActionsResponseTyped, BaseCore, CoreDto, MetadataRequest } from "./base.core";
 
 /**
  * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
@@ -75,34 +75,42 @@ export abstract class BaseService extends BaseCore {
 		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
 	}
 
+
 	/**
 	 * 
 	 * XX means Same Body Type for Requesting and Responding.
 	 * 
 	 * @param url 
-	 * @param dto 
+	 * @param metadataRequest 
 	 * @param actionsResponse 
+	 * @returns 
 	 */
-	protected postXX<T>(url: string, dto: CoreDto, actionsResponse: ActionsResponse) {
-		if (!this.tryLockAndAppendUnlockOnComplete(dto, actionsResponse)) return;
-
-		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, dto, { observe: 'body', responseType: 'json' });
-		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
+	protected postXX<T extends CoreDto>(url: string, metadataRequest: MetadataRequest<T>, actionsResponse: ActionsResponse) {
+		if (this.tryLockAndAppendUnlockOnComplete(metadataRequest, actionsResponse)) {
+			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, metadataRequest.dto, { observe: 'body', responseType: 'json' });
+			observableOfResponseBodyInRequestedType.subscribe(actionsResponse).add(() => {
+				this.unlockMetadataRequest(metadataRequest);
+			});
+		}
 	}
 
+
 	/**
 	 * 
 	 * XX means Same Body Type for Requesting and Responding.
 	 * 
 	 * @param url 
-	 * @param dto 
+	 * @param metadataRequest 
 	 * @param actionsResponse 
+	 * @returns 
 	 */
-	protected updateXX<T>(url: string, dto: CoreDto, actionsResponse: ActionsResponse) {
-		if (!this.tryLockAndAppendUnlockOnComplete(dto, actionsResponse)) return;
-
-		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.put<T>(url, dto, { observe: 'body', responseType: 'json' });
-		observableOfResponseBodyInRequestedType.subscribe(actionsResponse);
+	protected updateXX<T extends CoreDto>(url: string, metadataRequest: MetadataRequest<T>, actionsResponse: ActionsResponse) {
+		if (this.tryLockAndAppendUnlockOnComplete(metadataRequest, actionsResponse)) {
+			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.put<T>(url, metadataRequest.dto, { observe: 'body', responseType: 'json' });
+			observableOfResponseBodyInRequestedType.subscribe(actionsResponse).add(() => {
+				this.unlockMetadataRequest(metadataRequest);
+			});
+		}
 	}
 
 	protected delete(url: string, actionsResponse: ActionsResponse) {

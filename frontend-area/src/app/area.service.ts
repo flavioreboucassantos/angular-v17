@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActionsResponse, ActionsResponseTyped } from './base.core';
+import { ActionsResponse, ActionsResponseTyped, MetadataRequest } from './base.core';
 import { BaseService } from './base.service';
 import { DtoArea } from './entity-area/entity-area.component';
 
@@ -24,11 +24,11 @@ export class AreaService extends BaseService {
 		this.get(this.getRestApiPathParam(idArea), actionsResponse);
 	}
 
-	create(dto: DtoArea, actionsResponse: ActionsResponseTyped<DtoArea>) {
+	create(dto: MetadataRequest<DtoArea>, actionsResponse: ActionsResponseTyped<DtoArea>) {
 		this.postXX(this.getRestApi(), dto, actionsResponse);
 	}
 
-	update(idArea: number, dto: DtoArea, actionsResponse: ActionsResponseTyped<DtoArea>) {
+	update(idArea: number, dto: MetadataRequest<DtoArea>, actionsResponse: ActionsResponseTyped<DtoArea>) {
 		this.updateXX(this.getRestApiPathParam(idArea), dto, actionsResponse);
 	}
 

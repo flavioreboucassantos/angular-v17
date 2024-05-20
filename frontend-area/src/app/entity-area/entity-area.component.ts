@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterContentInit, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AreaService } from '../area.service';
-import { ActionsResponseTyped } from '../base.core';
+import { ActionsResponseTyped, MetadataRequest } from '../base.core';
 import { BaseViewComponent, ViewExpected } from '../base.view-component';
 import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
@@ -96,7 +96,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 				// NOT USED - REWRITTED AFTER				
 			}
 		}
-		const dtoArea: DtoArea = this.tryExtract(this.formArea);
+
+		const metadataRequest: MetadataRequest<DtoArea> = this.tryMetadataRequest(this.formArea);
+
 		switch (this.viewExpected) {
 			case ViewExpected.create:
 				actionsResponse.complete = () => this.modalActionsResponse?.open(
@@ -104,19 +106,61 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 					'Área Criada com Sucesso.',
 					() => this.reloadWithPath(idAreaCreated)
 				);
-				this.areaService.create(dtoArea, actionsResponse);
+				this.areaService.create(metadataRequest, actionsResponse);
 				break;
 
 			case ViewExpected.updateById:
 				actionsResponse.complete = () => this.modalActionsResponse?.open('Sucesso!', 'Área Atualizada.');
-				this.areaService.update(this.idArea, dtoArea, actionsResponse);
+				this.areaService.update(this.idArea, metadataRequest, actionsResponse);
 				break;
 		}
 	}
 
+	doTestTypeVariation(machineStateKeyStringAny: { [key: string]: any }) {
+		let idAreaCreated: number;
+		const actionsResponse: ActionsResponseTyped<DtoArea> = {
+			next: (value: DtoArea) => {
+				idAreaCreated = value.idArea;
+			},
+			error: (error: HttpErrorResponse) => {
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
+			},
+			complete: () => {
+				// NOT USED - REWRITTED AFTER				
+			}
+		}
+
+		const metadataRequest: MetadataRequest<DtoArea> = this.tryMetadataRequest(machineStateKeyStringAny);
+
+		// console.log(metadataRequest);
+
+		switch (this.viewExpected) {
+			case ViewExpected.create:
+				actionsResponse.complete = () => this.modalActionsResponse?.open(
+					'Sucesso!',
+					'Área Criada com Sucesso.',
+					() => this.reloadWithPath(idAreaCreated)
+				);
+				this.areaService.create(metadataRequest, actionsResponse);
+				break;
+
+			case ViewExpected.updateById:
+				actionsResponse.complete = () => this.modalActionsResponse?.open('Sucesso!', 'Área Atualizada.');
+				this.areaService.update(this.idArea, metadataRequest, actionsResponse);
+				break;
+		}
+
+		// console.log(metadataRequest);
+	}
+
 	submit() {
-		/* Teste de sincronia singlethread. */
-		for (let i = 0; i < 20; i++)
-			this.doSubmit();
+		// Teste em Machine State -> Object { [key: string]: any }
+		const machineStateKeyStringAny: { [key: string]: any } = { ...this.formArea.value };
+		for (let i = 0; i < 10; i++) // Testes de sincronia singlethread.
+			this.doTestTypeVariation(machineStateKeyStringAny);
+
+		// // Teste em Machine State -> FormGroup
+		// for (let i = 0; i < 10; i++) // Testes de sincronia singlethread.
+		// 	this.doSubmit();
 	}
 }
