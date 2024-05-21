@@ -11,8 +11,9 @@ import { DtoArea } from '../entity-area/entity-area.component';
 
 
 /**
- * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
- */
+* @author Flávio Rebouças Santos
+* @link flavioReboucasSantos@gmail.com
+*/
 @Component({
 	selector: 'app-list-entity-area',
 	standalone: true,

@@ -3,14 +3,14 @@ import { inject } from "@angular/core";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import { BaseCore } from "./base.core";
 
-/**
- * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
- */
-
 export enum ViewExpected {
 	'create', 'updateById'
 }
 
+/**
+* @author Flávio Rebouças Santos
+* @link flavioReboucasSantos@gmail.com
+*/
 export abstract class BaseViewComponent extends BaseCore {
 
 	private readonly router: Router = inject(Router);

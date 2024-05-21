@@ -16,19 +16,31 @@ export interface ActionsResponseTyped<T> {
 	complete: () => void
 }
 
+type TeardownLogic = (<T extends CoreDto>(metadataRequest: MetadataRequest<T>) => void);
 export interface MetadataRequest<T> {
 	readonly origin: any, // Start of line
 	acceptable: boolean, // End of Line
-	readonly dto: T
+	readonly dto: T,
+	teardown: (() => TeardownLogic)
 }
 
+/**
+ * @author Flávio Rebouças Santos
+ * @link flavioReboucasSantos@gmail.com
+ */
 export abstract class BaseCore {
 
-	readonly KEY_OF_STATE_DISABLED: string = '___SD___';
+	readonly KEY_OF_STATE_DISABLED: string = '{__SD__}';
+
+	readonly teardownLogic: TeardownLogic = <T extends CoreDto>(metadataRequest: MetadataRequest<T>) => {
+		this.unlockMetadataRequest(metadataRequest);
+	};
+	readonly teardown: (() => TeardownLogic) = (() => this.teardownLogic);
 
 	private isLockedOrigin(originFormGroup: FormGroup): boolean;
 	private isLockedOrigin(originKeyStringAny: CoreDto): boolean;
 	private isLockedOrigin(origin: any): boolean {
+		// Block to syncronize
 		switch (origin.constructor) {
 			case FormGroup:
 				return (origin as FormGroup).disabled;
@@ -93,20 +105,29 @@ export abstract class BaseCore {
 		this.disableOrigin(metadataRequest.origin);
 	}
 
-	protected unlockMetadataRequest<T extends CoreDto>(metadataRequest: MetadataRequest<T>) {
-		// metadataRequest.acceptable = true; // not necessary: metadataRequest is a waste now
+	private unlockMetadataRequest<T extends CoreDto>(metadataRequest: MetadataRequest<T>) {
 		this.enableOrigin(metadataRequest.origin);
 	}
 
-	protected tryLockAndAppendUnlockOnComplete<T extends CoreDto>(metadataRequest: MetadataRequest<T>, actionsResponse: ActionsResponse): boolean {
-		if (metadataRequest.acceptable) {
-			this.lockMetadataRequest(metadataRequest);
-			return true;
-		} else
-			return false;
+	private tryMetadataRequest<T extends CoreDto>(origin: any): MetadataRequest<T> | null {
+		if (this.isLockedOrigin(origin))
+			return null;
+		else {
+			const acceptable: boolean = true;
+			const newDto: T = this.generateDto(origin);
+			const newMetadataRequest: MetadataRequest<T> = {
+				origin: origin,
+				acceptable: acceptable,
+				dto: newDto as T,
+				teardown: this.teardown
+			};
+			return newMetadataRequest;
+		}
 	}
-
+	
 	/**
+	 * @param origin 
+	 * 
 	 * For param Object {[key: string]: any}
 	 * 
 	 * 		if empty, is Locked.
@@ -115,29 +136,15 @@ export abstract class BaseCore {
 	 * 		if KEY_OF_STATE_DISABLED == true, is Locked.
 	 * 			- Writes in the Object to ensure the existence of the state value.
 	 *  
-	 * @returns Consider MetadataRequest a waste after going through the service.
+	 * @returns Consider MetadataRequest a waste after first use.
 	 */
-	protected tryMetadataRequest<T extends CoreDto>(originFormGroup: FormGroup): MetadataRequest<T>;
-	protected tryMetadataRequest<T extends CoreDto>(originKeyStringAny: CoreDto): MetadataRequest<T>;
-	protected tryMetadataRequest<T extends CoreDto>(origin: any): MetadataRequest<T> {
-		if (this.isLockedOrigin(origin)) {
-			const acceptable: boolean = false;
-			const newDto: CoreDto = {};
-			const newMetadataRequest: MetadataRequest<T> = {
-				origin: origin,
-				acceptable: acceptable,
-				dto: newDto as T
-			};
-			return newMetadataRequest;
-		} else {
-			const acceptable: boolean = true;
-			const newDto: T = this.generateDto(origin);
-			const newMetadataRequest: MetadataRequest<T> = {
-				origin: origin,
-				acceptable: acceptable,
-				dto: newDto as T
-			};
-			return newMetadataRequest;
-		}
+	protected tryLock<T extends CoreDto>(origin: any): MetadataRequest<T> | null {
+		const metadataRequest: MetadataRequest<T> | null = this.tryMetadataRequest(origin);
+		if (metadataRequest !== null) {
+			this.lockMetadataRequest(metadataRequest);
+			return metadataRequest;
+		} else
+			return null;
 	}
+
 }

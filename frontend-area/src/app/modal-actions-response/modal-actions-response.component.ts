@@ -1,9 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 /**
- * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
- */
-
+* @author Flávio Rebouças Santos
+* @link flavioReboucasSantos@gmail.com
+*/
 @Component({
 	selector: 'app-modal-actions-response',
 	standalone: true,

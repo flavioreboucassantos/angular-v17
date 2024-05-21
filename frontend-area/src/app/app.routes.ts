@@ -4,8 +4,9 @@ import { EntityAreaComponent } from './entity-area/entity-area.component';
 import { HomeComponent } from './home/home.component';
 
 /**
- * @author Flávio Rebouças Santos - flavioReboucasSantos@gmail.com
- */
+* @author Flávio Rebouças Santos
+* @link flavioReboucasSantos@gmail.com
+*/
 export const routes: Routes = [
 	{
 		path: '',
