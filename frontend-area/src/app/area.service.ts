@@ -16,20 +16,20 @@ export class AreaService extends BaseService {
 		super();
 	}
 
-	findAll(actionsResponse: ActionsResponseTyped<DtoArea[]>) {
-		this.get(this.getRestApi(), actionsResponse);
+	findAll(actionsResponseTyped: ActionsResponseTyped<DtoArea[]>) {
+		this.getT(this.getRestApi(), actionsResponseTyped);
 	}
 
-	findById(idArea: number, actionsResponse: ActionsResponseTyped<DtoArea>) {
-		this.get(this.getRestApiPathParam(idArea), actionsResponse);
+	findById(idArea: number, actionsResponseTyped: ActionsResponseTyped<DtoArea>) {
+		this.getT(this.getRestApiPathParam(idArea), actionsResponseTyped);
 	}
 
-	create(origin: any, actionsResponse: ActionsResponseTyped<DtoArea>) {
-		this.postXX(this.getRestApi(), origin, actionsResponse);
+	create(origin: any, actionsResponseTyped: ActionsResponseTyped<DtoArea>) {
+		this.postTT(this.getRestApi(), origin, actionsResponseTyped);
 	}
 
-	update(idArea: number, origin: any, actionsResponse: ActionsResponseTyped<DtoArea>) {
-		this.putXX(this.getRestApiPathParam(idArea), origin, actionsResponse);
+	update(idArea: number, origin: any, actionsResponseTyped: ActionsResponseTyped<DtoArea>) {
+		this.putTT(this.getRestApiPathParam(idArea), origin, actionsResponseTyped);
 	}
 
 	remove(idArea: number, actionsResponse: ActionsResponse) {

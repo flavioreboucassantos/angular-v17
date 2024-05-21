@@ -118,29 +118,20 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	}
 
 	submitTest1() {
-		// Single Thread: Teste em Machine State = Object { [key: string]: any }
+		// Teste em Machine State = Object { [key: string]: any }
 		const keyStringAnyLikeMachineState: { [key: string]: any } = { ...this.formGroupArea.value };
-		for (let i = 0; i < 11; i++) // Testes de sincronia singlethread.
+		for (let i = 0; i < 11; i++)
 			this.doSubmit(keyStringAnyLikeMachineState);
 	}
 
 	submitTest2() {
-		// Single Thread: Teste em Machine State = FormGroup
-		for (let i = 0; i < 21; i++) // Testes de sincronia singlethread.
+		// Teste em Machine State = FormGroup
+		for (let i = 0; i < 21; i++)
 			this.doSubmit(this.formGroupArea);
 	}
 
-	asyncSubmitTest(i: number) {
-	}
-
-	submitTest3() {
-		for (let i = 0; i < 3100; i++)
-			setTimeout(() => this.asyncSubmitTest(i), 10 + (Math.random() * 100));
-	}
-
-	submit() {
-		// this.submitTest1();
+	submit() {		
+		this.submitTest1();
 		// this.submitTest2();
-		this.submitTest3();
 	}
 }

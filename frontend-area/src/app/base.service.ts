@@ -67,26 +67,28 @@ export abstract class BaseService extends BaseCore {
 
 	/**
 	 * 
+	 * T means Body Type for Responding.
+	 * 
+	 * There is no Body Type for Requesting.
+	 * 
 	 * @param url 
 	 * @param actionsResponse 
 	 */
-	protected get<T>(url: string, actionsResponseTyped: ActionsResponseTyped<T>) {
+	protected getT<T>(url: string, actionsResponseTyped: ActionsResponseTyped<T>): void {
 		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.get<T>(url, { observe: 'body', responseType: 'json' });
 		observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped);
 	}
 
-
-
 	/**
-	 * XX means Same Body Type for Requesting and Responding.
+	 * 
+	 * TT means Same Body Type for Requesting and Responding.
 	 * 
 	 * @param url 
-	 * @param origin 
+	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponse 
 	 */
-	protected postXX<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): void {
-		const metadataRequest: MetadataRequest<T> | null = this.tryLock(origin);
-		// console.log(metadataRequest);
+	protected postTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): void {
+		const metadataRequest: MetadataRequest<T> | null = this.tryMetadataRequest(origin);
 		if (metadataRequest !== null) {
 			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, metadataRequest.dto, { observe: 'body', responseType: 'json' });
 			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(metadataRequest.teardown);
@@ -95,22 +97,29 @@ export abstract class BaseService extends BaseCore {
 
 
 	/**
-	 * XX means Same Body Type for Requesting and Responding.
+	 * 
+	 * TT means Same Body Type for Requesting and Responding.
 	 * 
 	 * @param url 
-	 * @param origin 
+	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponse 
 	 */
-	protected putXX<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): void {
-		const metadataRequest: MetadataRequest<T> | null = this.tryLock(origin);
-		// console.log(metadataRequest);
+	protected putTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): void {
+		const metadataRequest: MetadataRequest<T> | null = this.tryMetadataRequest(origin);
 		if (metadataRequest !== null) {
 			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.put<T>(url, metadataRequest.dto, { observe: 'body', responseType: 'json' });
 			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(metadataRequest.teardown);
 		}
 	}
 
-	protected delete(url: string, actionsResponse: ActionsResponse) {
+	/**
+	 * 
+	 * There is no Body Type for Requesting or Responding.
+	 * 
+	 * @param url 
+	 * @param actionsResponse 
+	 */
+	protected delete(url: string, actionsResponse: ActionsResponse): void {
 		const observableStringOfResponseBodyInString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
 		observableStringOfResponseBodyInString.subscribe(actionsResponse);
 	}
