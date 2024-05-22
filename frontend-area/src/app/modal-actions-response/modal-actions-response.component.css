@@ -38,12 +38,6 @@
 	margin: 0px 0px 60px 0px;
 }
 
-/* Button */
-.modal-actions-response button {
-	opacity : 0;
-	position: absolute;
-}
-
 .modal-actions-response label {
 	background   : skyblue;
 	color        : white;

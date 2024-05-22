@@ -33,6 +33,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	readonly areaService: AreaService = inject(AreaService);
 
+	readonly dtoAndMachineState: { [key: string]: any } = {};
 	readonly formGroupArea = new FormGroup({
 		rawData: new FormControl(''),
 		uniqueData: new FormControl(''),
@@ -84,7 +85,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		this.areaService.findById(this.idArea, actionsResponse);
 	}
 
-	doSubmit(keyStringAnyLikeMachineState: { [key: string]: any }): void;
+	doSubmit(dtoAndMachineState: { [key: string]: any }): void;
 	doSubmit(formGroupLikeMachineState: FormGroup): void;
 	doSubmit(origin: any): void {
 		let idAreaCreated: number;
@@ -119,9 +120,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	submitTest1() {
 		// Teste em Machine State = Object { [key: string]: any }
-		const keyStringAnyLikeMachineState: { [key: string]: any } = { ...this.formGroupArea.value };
+		this.copyAllEnumerable1(this.dtoAndMachineState, this.formGroupArea.value)
 		for (let i = 0; i < 11; i++)
-			this.doSubmit(keyStringAnyLikeMachineState);
+			this.doSubmit(this.dtoAndMachineState);
 	}
 
 	submitTest2() {
@@ -130,7 +131,8 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 			this.doSubmit(this.formGroupArea);
 	}
 
-	submit() {		
+	submit() {
+		this.areaService.setOnOffTeardown(true);
 		this.submitTest1();
 		// this.submitTest2();
 	}

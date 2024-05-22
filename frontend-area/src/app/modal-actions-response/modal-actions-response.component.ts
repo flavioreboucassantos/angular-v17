@@ -13,7 +13,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 })
 export class ModalActionsResponseComponent {
 
-	@ViewChild('buttonModalActionsResponse') buttonModalActionsResponse?: ElementRef<HTMLElement>;
+	@ViewChild('dialog') dialog?: ElementRef<HTMLElement>;
 
 	visible: boolean = false;
 	textLead: string = '';
@@ -26,10 +26,11 @@ export class ModalActionsResponseComponent {
 		this.textLead = textLead;
 		this.textMessage = textMessage;
 		this.visible = true;
-		this.buttonModalActionsResponse?.nativeElement.focus();
+		setTimeout(() => this.dialog?.nativeElement.focus(), 50);
 	}
 
 	close() {
+		this.dialog?.nativeElement.blur();
 		this.visible = false;
 		if (this.callback) {
 			this.callback();
