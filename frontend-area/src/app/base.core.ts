@@ -47,7 +47,7 @@ export abstract class BaseCore {
 		}
 	}
 
-	private operateWithFormGroup<T extends CoreDto>(originFormGroup: FormGroup): MetadataRequest<T> | null {
+	private operateWithFormGroup<T extends CoreDto>(originFormGroup: FormGroup): MetadataRequest<T> | null {		
 		if (originFormGroup.disabled)
 			return null;
 		else {
@@ -85,5 +85,35 @@ export abstract class BaseCore {
 	 */
 	public setOnOffTeardown(onOffTeardown: boolean) {
 		this.onOffTeardown = onOffTeardown;
+	}
+
+	public assignState(originTarget: CoreDto, originSource: CoreDto): CoreDto;
+	public assignState(originTarget: CoreDto, originSource: FormGroup): CoreDto;
+	public assignState(originTarget: FormGroup, originSource: FormGroup): FormGroup;
+	public assignState(originTarget: FormGroup, originSource: CoreDto): FormGroup;
+	public assignState(originTarget: any, originSource: any): any {
+		let sourceState: boolean = true;
+
+		switch (originSource.constructor) {
+			case Object:
+				sourceState = (originSource as CoreDto)[this.KEY_OF_STATE_DISABLED];
+				break;
+
+			case FormGroup:
+				sourceState = (originSource as FormGroup).disabled;
+				break;
+		}
+
+		switch (originTarget.constructor) {
+			case Object:
+				(originTarget as CoreDto)[this.KEY_OF_STATE_DISABLED] = sourceState;
+				break;
+
+			case FormGroup:
+				(sourceState) ? (originTarget as FormGroup).disable() : (originTarget as FormGroup).enable();
+				break;
+		}
+
+		return originTarget;
 	}
 }

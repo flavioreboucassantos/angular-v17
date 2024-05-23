@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterContentInit, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AreaService } from '../area.service';
-import { ActionsResponseTyped } from '../base.core';
+import { ActionsResponseTyped, CoreDto } from '../base.core';
 import { BaseViewComponent, ViewExpected } from '../base.view-component';
 import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
@@ -33,7 +33,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	readonly areaService: AreaService = inject(AreaService);
 
-	readonly dtoAndMachineState: { [key: string]: any } = {};
+	readonly dtoAndMachineState: CoreDto = {};
 	readonly formGroupArea = new FormGroup({
 		rawData: new FormControl(''),
 		uniqueData: new FormControl(''),
@@ -85,7 +85,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		this.areaService.findById(this.idArea, actionsResponse);
 	}
 
-	doSubmit(dtoAndMachineState: { [key: string]: any }): void;
+	doSubmit(dtoAndMachineState: CoreDto): void;
 	doSubmit(formGroupLikeMachineState: FormGroup): void;
 	doSubmit(origin: any): void {
 		let idAreaCreated: number;
@@ -119,7 +119,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	}
 
 	submitTest1() {
-		// Teste em Machine State = Object { [key: string]: any }
+		// Teste em Machine State = Object CoreDto
 		this.copyAllEnumerable1(this.dtoAndMachineState, this.formGroupArea.value)
 		for (let i = 0; i < 11; i++)
 			this.doSubmit(this.dtoAndMachineState);
@@ -131,9 +131,44 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 			this.doSubmit(this.formGroupArea);
 	}
 
+	submitTest3() {
+		// Live Update: Teste com atualização de dados por atribuição de estado.
+
+		let liveUpdateDtoAndMachineState1: CoreDto;
+		let liveUpdateDtoAndMachineState2: CoreDto;
+
+		// 1) CoreDto <= FormGroup
+		liveUpdateDtoAndMachineState1 = {};
+		liveUpdateDtoAndMachineState1 = this.areaService.assignState(liveUpdateDtoAndMachineState1, this.formGroupArea);
+		liveUpdateDtoAndMachineState1 = this.copyAllEnumerable1(liveUpdateDtoAndMachineState1, this.formGroupArea.value); // LIVE UPDATE
+		// console.log(liveUpdateDtoAndMachineState1);
+		this.doSubmit(liveUpdateDtoAndMachineState1); // Assert: First Submit, First Requests
+
+		// 2) CoreDto <= CoreDto
+		liveUpdateDtoAndMachineState2 = {};
+		liveUpdateDtoAndMachineState2 = this.areaService.assignState(liveUpdateDtoAndMachineState2, liveUpdateDtoAndMachineState1);
+		liveUpdateDtoAndMachineState2 = this.copyAllEnumerable1(liveUpdateDtoAndMachineState2, this.formGroupArea.value); // LIVE UPDATE
+		// console.log(liveUpdateDtoAndMachineState2);
+		this.doSubmit(liveUpdateDtoAndMachineState2); // Assert: 2 Submits, 1 Requests		
+
+		// 3) FormGroup <= FormGroup
+		// ...
+
+		// 4) FormGroup <= CoreDto
+		this.formGroupArea.enable() // force enable to test
+		this.areaService.assignState(this.formGroupArea, liveUpdateDtoAndMachineState2);
+		// console.log(this.formGroupArea.disabled);
+		this.doSubmit(this.formGroupArea); // Assert: 3 Submits, 1 Requests
+
+		// this.formGroupArea had its State updated as it was assigned from the previous one.
+		// Since the accepted request was the first submit, the teardown event that enables Machine State is performed only on its object.
+		// Assert this.formGroupArea is disabled here.
+	}
+
 	submit() {
 		this.areaService.setOnOffTeardown(true);
-		this.submitTest1();
+		// this.submitTest1();
 		// this.submitTest2();
+		this.submitTest3();
 	}
 }
