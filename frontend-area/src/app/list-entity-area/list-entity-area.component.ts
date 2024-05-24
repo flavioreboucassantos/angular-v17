@@ -5,7 +5,7 @@ import { ModalActionsResponseComponent } from '../modal-actions-response/modal-a
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { AreaService } from '../area.service';
-import { ActionsResponse, ActionsResponseTyped } from '../base.core';
+import { ActionsResponse, ActionsResponseTyped } from '../base.state-request';
 import { BaseViewComponent } from '../base.view-component';
 import { DtoArea } from '../entity-area/entity-area.component';
 
@@ -27,6 +27,9 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 
 	readonly areaService: AreaService = inject(AreaService);
 
+	countDisabled: number = 0;
+	countFalses: number = 0;
+
 	listDtoArea: DtoArea[] = [];
 	filteredListDtoArea: DtoArea[] = [];
 
@@ -38,13 +41,18 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 		this.listDtoArea = this.filteredListDtoArea;
 	}
 
-	constructor() {
-		super();
-
-		const actionsResponse: ActionsResponseTyped<DtoArea[]> = {
+	private findAll() {
+		const actionsResponseTyped: ActionsResponseTyped<DtoArea[]> = {
+			disabled: () => {
+				this.countDisabled++;
+			},
 			next: (value: DtoArea[]) => {
-				this.listDtoArea = value;
-				this.filteredListDtoArea = value;
+
+				console.log("findAll -> next:");
+				console.log(value);
+
+				if (value)
+					this.listDtoArea = this.filteredListDtoArea = value;
 			},
 			error: (error: HttpErrorResponse) => {
 				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
@@ -52,7 +60,21 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 			complete: () => {
 			}
 		}
-		this.areaService.findAll(actionsResponse);
+
+		this.countDisabled = 0;
+		this.countFalses = 0;
+
+		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponseTyped to use the SAME Machine State.
+			if (!this.areaService.findAll(actionsResponseTyped))
+				this.countFalses++;
+
+		console.log("this.countDisabled = " + this.countDisabled);
+		console.log("this.countFalses = " + this.countFalses);
+	}
+
+	constructor() {
+		super();
+		this.findAll();
 	}
 
 	filterResults(searchString: string) {
@@ -87,6 +109,9 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 		rowArea?.classList.add('deleting');
 
 		const actionsResponse: ActionsResponse = {
+			disabled: () => {
+				this.countDisabled++;
+			},
 			next: (value: string) => {
 			},
 			error: (error: HttpErrorResponse) => {
@@ -98,7 +123,16 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 				this.removeFromLists(idArea);
 			}
 		}
-		this.areaService.remove(idArea, actionsResponse);
+
+		this.countDisabled = 0;
+		this.countFalses = 0;
+
+		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponse to use the SAME Machine State.
+			if (!this.areaService.remove(idArea, actionsResponse))
+				this.countFalses++;
+
+		console.log("this.countDisabled = " + this.countDisabled);
+		console.log("this.countFalses = " + this.countFalses);
 	}
 
 }

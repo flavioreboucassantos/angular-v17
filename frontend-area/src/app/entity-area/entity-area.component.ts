@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterContentInit, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
 import { AreaService } from '../area.service';
-import { ActionsResponseTyped, CoreDto } from '../base.core';
+import { ActionsResponseTyped, CoreDto } from '../base.state-request';
 import { BaseViewComponent, ViewExpected } from '../base.view-component';
 import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
@@ -33,12 +33,14 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	readonly areaService: AreaService = inject(AreaService);
 
-	readonly dtoAndMachineState: CoreDto = {};
-	readonly formGroupArea = new UntypedFormGroup({
+	readonly untypedFormGroup = new UntypedFormGroup({
 		rawData: new FormControl(''),
 		uniqueData: new FormControl(''),
 		highlighted: new FormControl(false)
 	});
+
+	countDisabled: number = 0;
+	countFalses: number = 0;
 
 	idArea: number = -1;
 
@@ -67,10 +69,17 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	viewUpdateById() {
 		this.idArea = parseInt(this.getPathParam('id'), 10);
 
-		const actionsResponse: ActionsResponseTyped<DtoArea> = {
+		const actionsResponseTyped: ActionsResponseTyped<DtoArea> = {
+			disabled: () => {
+				this.countDisabled++;
+			},
 			next: (value: DtoArea) => {
+
+				console.log("findById -> next:");
+				console.log(value);
+
 				if (value)
-					this.formGroupArea.setValue({
+					this.untypedFormGroup.setValue({
 						rawData: value.rawData,
 						uniqueData: value.uniqueData,
 						highlighted: value?.highlighted
@@ -82,7 +91,15 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 			complete: () => { }
 		}
 
-		this.areaService.findById(this.idArea, actionsResponse);
+		this.countDisabled = 0;
+		this.countFalses = 0;
+
+		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponseTyped to use the SAME Machine State.
+			if (!this.areaService.findById(this.idArea, actionsResponseTyped))
+				this.countFalses++;
+
+		console.log("this.countDisabled = " + this.countDisabled);
+		console.log("this.countFalses = " + this.countFalses);
 	}
 
 	doSubmit(dtoAndMachineState: CoreDto): void;
@@ -90,6 +107,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	doSubmit(origin: any): void {
 		let idAreaCreated: number;
 		const actionsResponse: ActionsResponseTyped<DtoArea> = {
+			disabled: () => {
+				this.countDisabled++;
+			},
 			next: (value: DtoArea) => {
 				idAreaCreated = value.idArea;
 			},
@@ -108,86 +128,106 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 					'Área Criada com Sucesso.',
 					() => this.reloadWithPath(idAreaCreated)
 				);
-				this.areaService.create(origin, actionsResponse);
+				if (!this.areaService.create(origin, actionsResponse))
+					this.countFalses++;
+
 				break;
 
 			case ViewExpected.updateById:
 				actionsResponse.complete = () => this.modalActionsResponse?.open('Sucesso!', 'Área Atualizada.');
-				this.areaService.update(this.idArea, origin, actionsResponse);
+				if (!this.areaService.update(this.idArea, origin, actionsResponse))
+					this.countFalses++;
+
 				break;
 		}
 	}
 
 	submitTest1() {
-		// Teste em Machine State = Object CoreDto
-		this.copyAllEnumerable1(this.dtoAndMachineState, this.formGroupArea.getRawValue())
+		console.log('1) CoreDto <= Machine State');
+
+		const dtoAndMachineState: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue())
 		for (let i = 0; i < 11; i++)
-			this.doSubmit(this.dtoAndMachineState);
+			this.doSubmit(dtoAndMachineState);
+		console.log(dtoAndMachineState);
 	}
 
 	submitTest2() {
-		// Teste em Machine State = FormGroup
+		console.log('2) UntypedFormGroup <= Machine State');
+
 		for (let i = 0; i < 21; i++)
-			this.doSubmit(this.formGroupArea);
+			this.doSubmit(this.untypedFormGroup);
+		console.log(this.untypedFormGroup.getRawValue());
 	}
 
-	// 3_x Live Update: Testes com atualização de dados por atribuição de estado.
+	// 3_x Live Update: Testes com Atualização de Dados por Compartilhamento de Estado de Máquina.
 
 	submitTest3_1() {
 
-		// 1) CoreDto <= CoreDto
+		console.log('3_1) CoreDto <= CoreDto');
 
-		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.formGroupArea.getRawValue());
-		this.areaService.assignStateRequestTarget(dtoAndMachineState1, this.formGroupArea);
+		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		this.areaService.shareStateRequestTarget(dtoAndMachineState1, this.untypedFormGroup);
 		this.doSubmit(dtoAndMachineState1); // Assert: 1 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState1);
 
 		// Live Update
-		const dtoAndMachineState2: CoreDto = this.copyAllEnumerable1({}, this.formGroupArea.getRawValue());
-		this.areaService.assignStateRequest(dtoAndMachineState2, dtoAndMachineState1);
+		const dtoAndMachineState2: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		this.areaService.shareStateRequest(dtoAndMachineState2, dtoAndMachineState1);
 		this.doSubmit(dtoAndMachineState2); // Assert: 2 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState2);
 	}
 
 	submitTest3_2() {
 
-		// 2) CoreDto <= UntypedFormGroup
+		console.log('3_2) CoreDto <= UntypedFormGroup');
 
-		this.doSubmit(this.formGroupArea); // Assert: 1 Submit(s), 1 Request(s)
+		this.doSubmit(this.untypedFormGroup); // Assert: 1 Submit(s), 1 Request(s)
 
 		// Live Update		
-		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.formGroupArea.getRawValue());
-		this.areaService.assignStateRequest(dtoAndMachineState1, this.formGroupArea);
+		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		this.areaService.shareStateRequest(dtoAndMachineState1, this.untypedFormGroup);
 		this.doSubmit(dtoAndMachineState1); // Assert: 2 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState1);
 	}
 
 	submitTest3_3() {
 
-		// 3) UntypedFormGroup <= UntypedFormGroup
+		console.log('3_3) UntypedFormGroup <= UntypedFormGroup');
+
 		// Live Update
 
 	}
 
 	submitTest3_4() {
 
-		// 4) UntypedFormGroup <= CoreDto
-		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.formGroupArea.getRawValue());
+		console.log('3_4) UntypedFormGroup <= CoreDto');
+
+		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
 		this.doSubmit(dtoAndMachineState1);
 
 		// Live Update
-		this.areaService.assignStateRequest(this.formGroupArea, dtoAndMachineState1);
+		this.areaService.shareStateRequest(this.untypedFormGroup, dtoAndMachineState1);
 		this.doSubmit(dtoAndMachineState1); // Assert: 2 Submit(s), 1 Request(s)
-		console.log(this.formGroupArea);
+		// this.areaService.deleteStateRequest(this.untypedFormGroup);
+		console.log(this.untypedFormGroup.getRawValue());
 	}
 
 	submit() {
-		this.areaService.setOnOffTeardown(true);
+		// !) Do not run more than one test per build, as they are copying the state of the same form.
+
+		this.countDisabled = 0;
+		this.countFalses = 0;
+
+		this.areaService.setDefaultOnOffTeardown(true);
+
 		// this.submitTest1();
 		// this.submitTest2();
 		this.submitTest3_1();
-		this.submitTest3_2();
+		// this.submitTest3_2();
 		// this.submitTest3_3();
-		this.submitTest3_4();
+		// this.submitTest3_4();
+
+		console.log("this.countDisabled = " + this.countDisabled);
+		console.log("this.countFalses = " + this.countFalses);
 	}
 }

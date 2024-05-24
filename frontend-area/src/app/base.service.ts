@@ -2,7 +2,7 @@ import { PlatformLocation } from "@angular/common";
 import { HttpClient } from '@angular/common/http';
 import { inject } from "@angular/core";
 import { Observable } from "rxjs/internal/Observable";
-import { ActionsResponse, ActionsResponseTyped, BaseCore, CoreDto, MetadataRequest } from "./base.core";
+import { ActionsResponse, ActionsResponseTyped, BaseStateRequest, CoreDto, Teardown } from "./base.state-request";
 
 /**
  * 
@@ -38,7 +38,7 @@ import { ActionsResponse, ActionsResponseTyped, BaseCore, CoreDto, MetadataReque
 * @author Flávio Rebouças Santos
 * @link flavioReboucasSantos@gmail.com
 */
-export abstract class BaseService extends BaseCore {
+export abstract class BaseService extends BaseStateRequest {
 
 	private readonly platformLocation: PlatformLocation = inject(PlatformLocation);
 
@@ -57,6 +57,10 @@ export abstract class BaseService extends BaseCore {
 
 	private readonly httpClient: HttpClient = inject(HttpClient);
 
+	// ################################################################
+	// extends
+	// ################################################################
+
 	protected getRestApi(): string {
 		return this.baseUrlRestApi
 	}
@@ -66,62 +70,81 @@ export abstract class BaseService extends BaseCore {
 	}
 
 	/**
-	 * 
 	 * T means Body Type for Responding.
-	 * 
 	 * There is no Body Type for Requesting.
-	 * 
 	 * @param url 
-	 * @param actionsResponse 
+	 * @param actionsResponseTyped This method changes or generates a property of State Disabled at the actionsResponseTyped, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
-	protected getT<T>(url: string, actionsResponseTyped: ActionsResponseTyped<T>): void {
-		const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.get<T>(url, { observe: 'body', responseType: 'json' });
-		observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped);
-	}
-
-	/**
-	 * 
-	 * TT means Same Body Type for Requesting and Responding.
-	 * 
-	 * @param url 
-	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
-	 * @param actionsResponse 
-	 */
-	protected postTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): void {
-		const metadataRequest: MetadataRequest<T> | null = this.tryMetadataRequest(origin);
-		if (metadataRequest !== null) {
-			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, metadataRequest.dto, { observe: 'body', responseType: 'json' });
-			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(metadataRequest.teardown);
-		}
-	}
-
-
-	/**
-	 * 
-	 * TT means Same Body Type for Requesting and Responding.
-	 * 
-	 * @param url 
-	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
-	 * @param actionsResponse 
-	 */
-	protected putTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): void {
-		const metadataRequest: MetadataRequest<T> | null = this.tryMetadataRequest(origin);
-		if (metadataRequest !== null) {
-			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.put<T>(url, metadataRequest.dto, { observe: 'body', responseType: 'json' });
-			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(metadataRequest.teardown);
+	protected getT<T>(url: string, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
+		const teardown: Teardown | null = this.tryRequest(actionsResponseTyped);
+		if (teardown === null) {
+			actionsResponseTyped.disabled();
+			return false;
+		} else {
+			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.get<T>(url, { observe: 'body', responseType: 'json' });
+			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped);
+			return true;
 		}
 	}
 
 	/**
-	 * 
+	 * TT means Same Body Type for Requesting and Responding.
+	 * @param url 
+	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @param actionsResponseTyped 
+	 * @returns true If progressed with the request. false If the request was restricted.
+	 */
+	protected postTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
+		const teardown: Teardown | null = this.tryRequest(origin);
+		if (teardown === null) {
+			actionsResponseTyped.disabled();
+			return false;
+		} else {
+			const newDto: T = this.generateDto(origin);
+			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.post<T>(url, newDto, { observe: 'body', responseType: 'json' });
+			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(teardown);
+			return true;
+		}
+	}
+
+
+	/**	
+	 * TT means Same Body Type for Requesting and Responding.
+	 * @param url 
+	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @param actionsResponseTyped 
+	 * @returns true If progressed with the request. false If the request was restricted.
+	 */
+	protected putTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
+		const teardown: Teardown | null = this.tryRequest(origin);
+		if (teardown === null) {
+			actionsResponseTyped.disabled();
+			return false;
+		} else {
+			const newDto: T = this.generateDto(origin);
+			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.put<T>(url, newDto, { observe: 'body', responseType: 'json' });
+			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(teardown);
+			return true;
+		}
+	}
+
+	/** 
 	 * There is no Body Type for Requesting or Responding.
-	 * 
 	 * @param url 
-	 * @param actionsResponse 
+	 * @param actionsResponse This method changes or generates a property of State Disabled at the actionsResponse, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
-	protected delete(url: string, actionsResponse: ActionsResponse): void {
-		const observableStringOfResponseBodyInString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
-		observableStringOfResponseBodyInString.subscribe(actionsResponse);
+	protected delete(url: string, actionsResponse: ActionsResponse): boolean {
+		const teardown: Teardown | null = this.tryRequest(actionsResponse);
+		if (teardown === null) {
+			actionsResponse.disabled();
+			return false;
+		} else {
+			const observableStringOfResponseBodyInString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
+			observableStringOfResponseBodyInString.subscribe(actionsResponse);
+			return true;
+		}
 	}
 
 	constructor() {
