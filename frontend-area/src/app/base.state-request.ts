@@ -239,9 +239,9 @@ export abstract class BaseStateRequest {
 				(originTarget as CoreDto)[this.KEY_OF_STATE_REQUEST] = sourceStateRequest;
 				break;
 
-			case UntypedFormGroup:
-				sourceStateRequest.target = originTarget; // Update for.
+			case UntypedFormGroup:				
 				this.prepareAndGetStateRequestForUntypedFormGroup(originTarget);
+				sourceStateRequest.target = originTarget; // Update for.
 				(originTarget as UntypedFormGroup).setValue({ [this.KEY_OF_STATE_REQUEST]: sourceStateRequest, ...originTarget.getRawValue() });
 				break;
 		}
