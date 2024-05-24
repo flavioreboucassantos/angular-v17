@@ -166,7 +166,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		console.log('3_1) CoreDto <= CoreDto');
 
 		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
-		this.areaService.shareStateRequestTarget(dtoAndMachineState1, this.untypedFormGroup);
+		this.areaService.setStateRequestTarget(dtoAndMachineState1, this.untypedFormGroup);
 		this.doSubmit(dtoAndMachineState1); // Assert: 1 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState1);
 

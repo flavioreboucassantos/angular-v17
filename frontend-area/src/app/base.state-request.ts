@@ -87,7 +87,16 @@ export abstract class BaseStateRequest {
 
 	private disableStateRequest(stateRequest: StateRequest) {
 		stateRequest.disabled = true;
-		stateRequest.target?.disable();
+		if (stateRequest.onOffTeardown) {
+			const target = stateRequest.target;
+			if (target !== undefined) {
+				switch (target.constructor) {
+					case UntypedFormGroup:
+						(target as UntypedFormGroup).disable();
+						break;
+				}
+			}
+		}
 	}
 
 	private enableStateRequest(stateRequest: StateRequest) {
@@ -203,6 +212,8 @@ export abstract class BaseStateRequest {
 
 	/**
 	 * Causes there to be a Machine State in the target that is the same object as the source.
+	 * 
+	 * The value of onOffTeardown will be the same as well.
 	 * @param originTarget 
 	 * @param originSource 
 	 */
@@ -243,8 +254,8 @@ export abstract class BaseStateRequest {
 	 * @param origin 
 	 * @param targetFor 
 	 */
-	public shareStateRequestTarget(originCoreDto: CoreDto, targetFor: UntypedFormGroup): CoreDto;
-	public shareStateRequestTarget(origin: any, stateRequestTarget: any): any {
+	public setStateRequestTarget(originCoreDto: CoreDto, targetFor: UntypedFormGroup): CoreDto;
+	public setStateRequestTarget(origin: any, stateRequestTarget: any): any {
 		switch (origin.constructor) {
 			case Object:
 				this.prepareAndGetStateRequestForKeyStringAny(origin).target = stateRequestTarget;
