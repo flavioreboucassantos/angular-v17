@@ -80,10 +80,10 @@ export abstract class BaseStateRequest {
 	// ################################################################
 
 	private promiseFirstTeardown(stateRequest: StateRequest, target: StateRequestTarget) {
-		if (stateRequest.disabled) {
-			// !!! Impedir que enableStateRequest execute antes do termino desse metodo.
+		// !!! Impedir que this.enableStateRequest inicie: Durante a leitura de stateRequest.disabled && Durante this.doDisableStateRequest
+		// !!! Para prevenir que o alvo permaneça disabled depois de this.enableStateRequest	
+		if (stateRequest.disabled)
 			this.doDisableStateRequest(target);
-		}
 	}
 
 	private appendTargetAtStateRequest(stateRequest: StateRequest, target: StateRequestTarget): StateRequest {
@@ -101,9 +101,8 @@ export abstract class BaseStateRequest {
 	private iterateOverStateRequestTargetMap(stateRequest: StateRequest, callbackfn: ((value: null, key: StateRequestTarget) => void)) {
 		if (stateRequest.onOffTeardown) {
 			const target = stateRequest.target;
-			if (target !== undefined) {
+			if (target !== undefined)
 				target.forEach(callbackfn);
-			}
 		}
 	}
 
