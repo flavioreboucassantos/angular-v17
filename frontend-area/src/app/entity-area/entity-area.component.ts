@@ -39,6 +39,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		highlighted: new FormControl(false)
 	});
 
+	readonly untypedFormGroup2 = new UntypedFormGroup({
+	});
+
 	countDisabled: number = 0;
 	countFalses: number = 0;
 
@@ -160,20 +163,28 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	}
 
 	// 3_x Live Update: Testes com Atualização de Dados por Compartilhamento de Estado de Máquina.
+	// - Note: Able to prepare the Machine State and Shares before any Submit.
+	// - Note: Able to indicate multiple targets for Teardown. Accepted Targets: type StateRequestTarget.
+	// - Note: Performs the First Teardown (disable...) on targets that are attached during the request's progress.
 
 	submitTest3_1() {
 
 		console.log('3_1) CoreDto <= CoreDto');
 
 		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
-		this.areaService.setStateRequestTarget(dtoAndMachineState1, this.untypedFormGroup);
-		this.doSubmit(dtoAndMachineState1); // Assert: 1 Submit(s), 1 Request(s)
+
+		this.areaService.setOnOffTeardown(dtoAndMachineState1, true); // try false
+
+		this.areaService.appendStateRequestTarget(dtoAndMachineState1, this.untypedFormGroup);
+		this.doSubmit(dtoAndMachineState1); // Assert Acceptance: 1 Submit(s), 1 Request(s)
+		console.log('this.untypedFormGroup.disabled = ' + this.untypedFormGroup.disabled);
 		console.log(dtoAndMachineState1);
 
 		// Live Update
 		const dtoAndMachineState2: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
-		this.areaService.shareStateRequest(dtoAndMachineState2, dtoAndMachineState1);
-		this.doSubmit(dtoAndMachineState2); // Assert: 2 Submit(s), 1 Request(s)
+
+		this.areaService.shareAndAppendTargetStateRequest(dtoAndMachineState2, dtoAndMachineState1);
+		this.doSubmit(dtoAndMachineState2); // Assert Rejection: 2 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState2);
 	}
 
@@ -181,12 +192,13 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 		console.log('3_2) CoreDto <= UntypedFormGroup');
 
-		this.doSubmit(this.untypedFormGroup); // Assert: 1 Submit(s), 1 Request(s)
+		this.doSubmit(this.untypedFormGroup); // Assert Acceptance: 1 Submit(s), 1 Request(s)		
 
 		// Live Update		
 		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
-		this.areaService.shareStateRequest(dtoAndMachineState1, this.untypedFormGroup);
-		this.doSubmit(dtoAndMachineState1); // Assert: 2 Submit(s), 1 Request(s)
+
+		this.areaService.shareAndAppendTargetStateRequest(dtoAndMachineState1, this.untypedFormGroup);
+		this.doSubmit(dtoAndMachineState1); // Assert Rejection: 2 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState1);
 	}
 
@@ -195,7 +207,6 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		console.log('3_3) UntypedFormGroup <= UntypedFormGroup');
 
 		// Live Update
-
 	}
 
 	submitTest3_4() {
@@ -203,13 +214,21 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		console.log('3_4) UntypedFormGroup <= CoreDto');
 
 		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
-		this.doSubmit(dtoAndMachineState1);
+
+		this.areaService.setOnOffTeardown(dtoAndMachineState1, true); // try false
+
+		this.doSubmit(dtoAndMachineState1); // Assert Acceptance: 1 Submit(s), 1 Request(s)
 
 		// Live Update
-		this.areaService.shareStateRequest(this.untypedFormGroup, dtoAndMachineState1);
-		this.doSubmit(dtoAndMachineState1); // Assert: 2 Submit(s), 1 Request(s)
-		// this.areaService.deleteStateRequest(this.untypedFormGroup);
+		this.areaService.shareAndAppendTargetStateRequest(this.untypedFormGroup, dtoAndMachineState1); // Performs the First Teardown
+		this.doSubmit(dtoAndMachineState1); // Assert Rejection: 2 Submit(s), 1 Request(s)
+
+		// this.areaService.unappendStateRequestTarget(this.untypedFormGroup); // try unappendStateRequestTarget
+		// this.areaService.deleteAndUnappendStateRequest(this.untypedFormGroup); // try deleteAndUnappendStateRequest
+
+		console.log('this.untypedFormGroup.disabled = ' + this.untypedFormGroup.disabled);
 		console.log(this.untypedFormGroup.getRawValue());
+		console.log(dtoAndMachineState1);
 	}
 
 	submit() {
@@ -222,10 +241,10 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 		// this.submitTest1();
 		// this.submitTest2();
-		this.submitTest3_1();
+		// this.submitTest3_1();
 		// this.submitTest3_2();
 		// this.submitTest3_3();
-		// this.submitTest3_4();
+		this.submitTest3_4();
 
 		console.log("this.countDisabled = " + this.countDisabled);
 		console.log("this.countFalses = " + this.countFalses);

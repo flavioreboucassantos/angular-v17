@@ -20,10 +20,12 @@ export interface ActionsResponseTyped<T> {
 
 export type Teardown = (() => void);
 
+export type StateRequestTarget = UntypedFormGroup;
+
 interface StateRequest {
 	disabled: boolean,
 	onOffTeardown: boolean,
-	target?: UntypedFormGroup
+	target?: Map<StateRequestTarget, null>;
 }
 
 /**
@@ -36,20 +38,12 @@ export abstract class BaseStateRequest {
 
 	private defaultOnOffTeardown: boolean = true;
 
-	// ################################################################
-	// delete...
-	// ################################################################
-
-	private deleteForKeyStringAny(originKeyStringAny: CoreDto) {
-		delete originKeyStringAny[this.KEY_OF_STATE_REQUEST];
-	}
-
-	private deleteForUntypedFormGroup(originUntypedFormGroup: UntypedFormGroup) {
-		originUntypedFormGroup.removeControl(this.KEY_OF_STATE_REQUEST);
+	private newMapStateRequestTarget(): Map<StateRequestTarget, null> {
+		return new Map<StateRequestTarget, null>();
 	}
 
 	// ################################################################
-	// prepareAndGet...
+	// prepareAndGetStateRequestFor...
 	// ################################################################
 
 	private prepareAndGetStateRequestForKeyStringAny(originKeyStringAny: CoreDto): StateRequest {
@@ -71,7 +65,7 @@ export abstract class BaseStateRequest {
 			const stateRequest: StateRequest = {
 				disabled: false,
 				onOffTeardown: this.defaultOnOffTeardown,
-				target: originUntypedFormGroup
+				target: this.newMapStateRequestTarget()
 			};
 
 			originUntypedFormGroup.addControl(this.KEY_OF_STATE_REQUEST, new FormControl(stateRequest));
@@ -82,82 +76,166 @@ export abstract class BaseStateRequest {
 	}
 
 	// ################################################################
-	// disable, enable
+	// appendTargetAtStateRequest... (BY TRY REQUEST FOR AND PUBLIC)
 	// ################################################################
 
-	private disableStateRequest(stateRequest: StateRequest) {
-		stateRequest.disabled = true;
+	private promiseFirstTeardown(stateRequest: StateRequest, target: StateRequestTarget) {
+		if (stateRequest.disabled) {
+			// !!! Impedir que enableStateRequest execute antes do termino desse metodo.
+			this.doDisableStateRequest(target);
+		}
+	}
+
+	private appendTargetAtStateRequest(stateRequest: StateRequest, target: StateRequestTarget): StateRequest {
+		if (stateRequest.target === undefined)
+			stateRequest.target = this.newMapStateRequestTarget();
+		stateRequest.target.set(target, null);
+		this.promiseFirstTeardown(stateRequest, target);
+		return stateRequest;
+	}
+
+	// ################################################################
+	// disableStateRequest, enableStateRequest (BY TRY REQUEST FOR)
+	// ################################################################
+
+	private iterateOverStateRequestTargetMap(stateRequest: StateRequest, callbackfn: ((value: null, key: StateRequestTarget) => void)) {
 		if (stateRequest.onOffTeardown) {
 			const target = stateRequest.target;
 			if (target !== undefined) {
-				switch (target.constructor) {
-					case UntypedFormGroup:
-						(target as UntypedFormGroup).disable();
-						break;
-				}
+				target.forEach(callbackfn);
 			}
 		}
+	}
+
+	private doDisableStateRequest(stateRequestTarget: StateRequestTarget) {
+		switch (stateRequestTarget.constructor) {
+			case UntypedFormGroup:
+				(stateRequestTarget as UntypedFormGroup).disable();
+				break;
+		}
+	}
+
+	private disableStateRequest(stateRequest: StateRequest) {
+		stateRequest.disabled = true;
+		this.iterateOverStateRequestTargetMap(stateRequest, (value, stateRequestTarget) => this.doDisableStateRequest(stateRequestTarget));
 	}
 
 	private enableStateRequest(stateRequest: StateRequest) {
 		stateRequest.disabled = false;
-		if (stateRequest.onOffTeardown) {
-			const target = stateRequest.target;
-			if (target !== undefined) {
-				switch (target.constructor) {
-					case UntypedFormGroup:
-						(target as UntypedFormGroup).enable();
-						break;
-				}
+		this.iterateOverStateRequestTargetMap(stateRequest, (value, stateRequestTarget) => {
+			switch (stateRequestTarget.constructor) {
+				case UntypedFormGroup:
+					(stateRequestTarget as UntypedFormGroup).enable();
+					break;
 			}
+		});
+	}
+
+	// ################################################################
+	// tryRequestFor... (BY TRY REQUEST)
+	// ################################################################
+
+	private tryRequestForKeyStringAny(originKeyStringAny: CoreDto): Teardown | null {
+		const stateRequest: StateRequest = this.prepareAndGetStateRequestForKeyStringAny(originKeyStringAny);
+		if (stateRequest.disabled === false) {
+			// this.appendTargetAtStateRequest(stateRequest, originKeyStringAny);
+
+			this.disableStateRequest(stateRequest);
+			return () => this.enableStateRequest(stateRequest);
+
+		} else
+			return null;
+	}
+
+	private tryRequestForUntypedFormGroup(originUntypedFormGroup: UntypedFormGroup): Teardown | null {
+		const stateRequest: StateRequest = this.prepareAndGetStateRequestForUntypedFormGroup(originUntypedFormGroup);
+		if (stateRequest.disabled === false) {
+			this.appendTargetAtStateRequest(stateRequest, originUntypedFormGroup);
+
+			this.disableStateRequest(stateRequest);
+			return () => this.enableStateRequest(stateRequest);
+
+		} else
+			return null;
+	}
+
+	/**
+	 * @param stateRequest 
+	 * @param target 
+	 * @returns true if an element in the Map existed and has been removed, or false if the element does not exist.
+	 */
+	private unappendTargetAtStateRequest(stateRequest: StateRequest, target: StateRequestTarget): boolean {
+		const stateRequestTarget = stateRequest.target;
+		if (stateRequestTarget !== undefined)
+			return stateRequestTarget.delete(target);
+		else
+			return false;
+	}
+
+	// ################################################################
+	// setStateRequestFor... (BY SHARE AND APPEND TARGET STATE REQUEST)
+	// ################################################################
+
+	private setStateRequestForKeyStringAny(originKeyStringAny: CoreDto, stateRequest: StateRequest): StateRequest {
+		originKeyStringAny[this.KEY_OF_STATE_REQUEST] = stateRequest;
+		return stateRequest;
+	}
+
+	private setStateRequestForUntypedFormGroup(originUntypedFormGroup: UntypedFormGroup, stateRequest: StateRequest): StateRequest {
+		if (originUntypedFormGroup.getRawValue()[this.KEY_OF_STATE_REQUEST] === undefined) // prepare with addControl
+			originUntypedFormGroup.addControl(this.KEY_OF_STATE_REQUEST, new FormControl(null));
+		originUntypedFormGroup.setValue({ ...originUntypedFormGroup.getRawValue(), [this.KEY_OF_STATE_REQUEST]: stateRequest });
+		return stateRequest;
+	}
+
+	// ################################################################
+	// getAndDeleteStateRequestFor... (BY PUBLIC)
+	// ################################################################
+
+	private getAndDeleteStateRequestForKeyStringAny(originKeyStringAny: CoreDto): StateRequest {
+		const stateRequest: StateRequest = originKeyStringAny[this.KEY_OF_STATE_REQUEST];
+		delete originKeyStringAny[this.KEY_OF_STATE_REQUEST];
+		return stateRequest;
+	}
+
+	private getAndDeleteStateRequestForUntypedFormGroup(originUntypedFormGroup: UntypedFormGroup): StateRequest {
+		const stateRequest: StateRequest = originUntypedFormGroup.getRawValue()[this.KEY_OF_STATE_REQUEST]
+		originUntypedFormGroup.removeControl(this.KEY_OF_STATE_REQUEST);
+		return stateRequest;
+	}
+
+	// ################################################################
+	// getStateRequest (BY PUBLIC)
+	// ################################################################
+
+	private getStateRequest(origin: any): StateRequest {
+		switch (origin.constructor) {
+			case Object:
+				return this.prepareAndGetStateRequestForKeyStringAny(origin);
+
+			case UntypedFormGroup:
+				return this.prepareAndGetStateRequestForUntypedFormGroup(origin);
+
+			default:
+				return { disabled: false, onOffTeardown: false };
 		}
 	}
 
 	// ################################################################
-	// operateWith...
+	// protected (EXTENDS)
 	// ################################################################
 
-	private operateWithKeyStringAny(originKeyStringAny: CoreDto): Teardown | null {
-		const stateRequest: StateRequest = this.prepareAndGetStateRequestForKeyStringAny(originKeyStringAny);
-		if (stateRequest.disabled === false) {
-
-			this.disableStateRequest(stateRequest);
-			return () => this.enableStateRequest(stateRequest);
-
-		} else
-			return null;
-	}
-
-	private operateWithUntypedFormGroup(originUntypedFormGroup: UntypedFormGroup): Teardown | null {
-		const stateRequest: StateRequest = this.prepareAndGetStateRequestForUntypedFormGroup(originUntypedFormGroup);		
-		if (stateRequest.disabled === false) {
-
-			this.disableStateRequest(stateRequest);
-			return () => this.enableStateRequest(stateRequest);
-
-		} else
-			return null;
-	}
-
-	// ################################################################
-	// extends (protected)
-	// ################################################################
-
-	/**
-	 * For param Object {[key: string]: any}
-	 * 
-	 * 		if KEY_OF_STATE_REQUEST == true then is Locked.
-	 * 			- Writes in the Object to ensure the existence of the state value.
-	 * @param origin 
-	 * @returns Consider MetadataRequest a waste after first use.
+	/**	 
+	 * @param origin Writes or manipulate origin to ensure the existence of the state value.
+	 * @returns Teardown if the request was accepted, null if did not accept the request.
 	 */
 	protected tryRequest(origin: any): Teardown | null {
 		switch (origin.constructor) {
 			case Object:
-				return this.operateWithKeyStringAny(origin);
+				return this.tryRequestForKeyStringAny(origin);
 
 			case UntypedFormGroup:
-				return this.operateWithUntypedFormGroup(origin);
+				return this.tryRequestForUntypedFormGroup(origin);
 		}
 		return null;
 	}
@@ -182,11 +260,11 @@ export abstract class BaseStateRequest {
 	}
 
 	// ################################################################
-	// public
+	// public (PUBLIC)
 	// ################################################################
 
 	/**
-	 * While the Teardown operation is responsible for enabling the origin, this method is responsible for defining the default on each request whether Teardown should occur.
+	 * While the Teardown operation is responsible for enabling and disabling the target, this method is responsible for defining the default on each request whether Teardown should occur.
 	 * @param defaultOnOffTeardown true is On, false is Off. true is Default.
 	 */
 	public setDefaultOnOffTeardown(defaultOnOffTeardown: boolean) {
@@ -194,88 +272,70 @@ export abstract class BaseStateRequest {
 	}
 
 	/**
-	 * While the Teardown operation is responsible for enabling the origin, this method is responsible for defining whether Teardown should occur in the current origin state.
-	 * @param origin 
+	 * While the Teardown operation is responsible for enabling and disabling the target, this method is responsible for defining whether Teardown should occur in the current origin state.
+	 * @param origin The Target.
 	 * @param onOffTeardown true is On, false is Off. Use setDefaultOnOffTeardown to define Default.
 	 */
 	public setOnOffTeardown(origin: any, onOffTeardown: boolean) {
-		switch (origin.constructor) {
-			case Object:
-				this.prepareAndGetStateRequestForKeyStringAny(origin).onOffTeardown = onOffTeardown;
-				break;
-
-			case UntypedFormGroup:
-				this.prepareAndGetStateRequestForUntypedFormGroup(origin).onOffTeardown = onOffTeardown;
-				break;
-		}
+		this.getStateRequest(origin).onOffTeardown = onOffTeardown;
 	}
 
 	/**
-	 * Causes there to be a Machine State in the target that is the same object as the source.
+	 * Causes there to be a Machine State in the originTarget that is the same object as the source.
 	 * 
-	 * The value of onOffTeardown will be the same as well.
-	 * @param originTarget 
+	 * The value of onOffTeardown and all appends targets will also be shared.
+	 * @param originTarget Appends originTarget to the shared StateRequest.
 	 * @param originSource 
 	 */
-	public shareStateRequest(originTarget: CoreDto, originSource: CoreDto): CoreDto;
-	public shareStateRequest(originTarget: CoreDto, originSource: UntypedFormGroup): CoreDto;
-	public shareStateRequest(originTarget: UntypedFormGroup, originSource: UntypedFormGroup): UntypedFormGroup;
-	public shareStateRequest(originTarget: UntypedFormGroup, originSource: CoreDto): UntypedFormGroup;
-	public shareStateRequest(originTarget: any, originSource: any): any {
-		let sourceStateRequest = null;
-
-		switch (originSource.constructor) {
+	public shareAndAppendTargetStateRequest(originTarget: CoreDto, originSource: CoreDto): CoreDto;
+	public shareAndAppendTargetStateRequest(originTarget: CoreDto, originSource: UntypedFormGroup): CoreDto;
+	public shareAndAppendTargetStateRequest(originTarget: UntypedFormGroup, originSource: UntypedFormGroup): UntypedFormGroup;
+	public shareAndAppendTargetStateRequest(originTarget: UntypedFormGroup, originSource: CoreDto): UntypedFormGroup;
+	public shareAndAppendTargetStateRequest(originTarget: any, originSource: any): any {
+		switch (originTarget.constructor) {
 			case Object:
-				sourceStateRequest = (originSource as CoreDto)[this.KEY_OF_STATE_REQUEST];
+				this.setStateRequestForKeyStringAny(originTarget, this.getStateRequest(originSource));
 				break;
 
 			case UntypedFormGroup:
-				sourceStateRequest = (originSource as UntypedFormGroup).getRawValue()[this.KEY_OF_STATE_REQUEST];
+				const stateRequest: StateRequest = this.setStateRequestForUntypedFormGroup(originTarget, this.getStateRequest(originSource));
+				this.appendTargetAtStateRequest(stateRequest, originTarget);
 				break;
 		}
-
-		switch (originTarget.constructor) {
-			case Object:
-				(originTarget as CoreDto)[this.KEY_OF_STATE_REQUEST] = sourceStateRequest;
-				break;
-
-			case UntypedFormGroup:				
-				this.prepareAndGetStateRequestForUntypedFormGroup(originTarget);
-				sourceStateRequest.target = originTarget; // Update for.
-				(originTarget as UntypedFormGroup).setValue({ [this.KEY_OF_STATE_REQUEST]: sourceStateRequest, ...originTarget.getRawValue() });
-				break;
-		}
-
 		return originTarget;
 	}
 
 	/**
-	 * Makes the target outside of origin a target for enabling and disabling.
+	 * Makes the target 'outside' of origin a target for enabling and disabling by Teardown.
 	 * @param origin 
-	 * @param targetFor 
+	 * @param target 
 	 */
-	public setStateRequestTarget(originCoreDto: CoreDto, targetFor: UntypedFormGroup): CoreDto;
-	public setStateRequestTarget(origin: any, stateRequestTarget: any): any {
-		switch (origin.constructor) {
-			case Object:
-				this.prepareAndGetStateRequestForKeyStringAny(origin).target = stateRequestTarget;
-				break;
-		}
+	public appendStateRequestTarget(origin: any, target: StateRequestTarget) {
+		this.appendTargetAtStateRequest(this.getStateRequest(origin), target);
+	}
+
+	/**
+	 * Removes origin from target from your own StateRequest.
+	 * @param origin 
+	 * @returns true if an element in the Map existed and has been removed, or false if the element does not exist.
+	 */
+	public unappendStateRequestTarget(origin: any): boolean {
+		return this.unappendTargetAtStateRequest(this.getStateRequest(origin), origin);
 	}
 
 	/**
 	 * Frees origin from loading Machine State data.
-	 * @param origin 
+	 * @param origin Unappend origin to target of StateRequest.
+	 * @returns true if an element in the Map existed and has been removed, or false if the element does not exist.
 	 */
-	public deleteStateRequest(origin: any) {
+	public deleteAndUnappendStateRequest(origin: any): boolean {
 		switch (origin.constructor) {
 			case Object:
-				this.deleteForKeyStringAny(origin);
-				break;
+				return this.unappendTargetAtStateRequest(this.getAndDeleteStateRequestForKeyStringAny(origin), origin);
 
 			case UntypedFormGroup:
-				this.deleteForUntypedFormGroup(origin);
-				break;
+				return this.unappendTargetAtStateRequest(this.getAndDeleteStateRequestForUntypedFormGroup(origin), origin);
 		}
+		return false;
 	}
 }
