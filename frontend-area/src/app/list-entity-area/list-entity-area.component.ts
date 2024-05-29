@@ -33,6 +33,8 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 	listDtoArea: DtoArea[] = [];
 	filteredListDtoArea: DtoArea[] = [];
 
+	readonly actionsResponse: ActionsResponse = this.newEmptyActionsResponse();
+
 	private removeFromLists(idArea: number) {
 		this.filteredListDtoArea = this.listDtoArea.filter((dtoArea) => {
 			if (dtoArea?.idArea == idArea) return false;
@@ -104,31 +106,25 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 	}
 
 
-	removeArea(idArea: number) {
+	removeArea(idArea: number) { // Reuses the SAME actionsResponse to use the SAME Machine State.
 		const rowArea: HTMLElement | null = document.getElementById('idRowArea' + idArea);
 		rowArea?.classList.add('deleting');
 
-		const actionsResponse: ActionsResponse = {
-			disabled: () => {
-				this.countDisabled++;
-			},
-			next: (value: string) => {
-			},
-			error: (error: HttpErrorResponse) => {
-				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
-				rowArea?.classList.remove('deleting');
-			},
-			complete: () => {
-				rowArea?.remove();
-				this.removeFromLists(idArea);
-			}
-		}
+		this.actionsResponse.disabled = () => this.countDisabled++;
+		this.actionsResponse.error = (error: HttpErrorResponse) => {
+			this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
+			rowArea?.classList.remove('deleting');
+		};
+		this.actionsResponse.complete = () => {
+			rowArea?.remove();
+			this.removeFromLists(idArea);
+		};
 
 		this.countDisabled = 0;
 		this.countFalses = 0;
 
-		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponse to use the SAME Machine State.
-			if (!this.areaService.remove(idArea, actionsResponse))
+		for (let i = 0; i < 11; i++)
+			if (!this.areaService.remove(idArea, this.actionsResponse))
 				this.countFalses++;
 
 		console.log("this.countDisabled = " + this.countDisabled);

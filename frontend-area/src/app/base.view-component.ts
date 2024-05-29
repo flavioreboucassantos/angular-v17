@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
+import { ActionsResponse } from "./base.state-request";
 
 export enum ViewExpected {
 	'create', 'updateById'
@@ -85,6 +86,15 @@ export abstract class BaseViewComponent {
 	// ################################################################
 	// REQUEST
 	// ################################################################
+
+	newEmptyActionsResponse(): ActionsResponse {
+		return {
+			disabled: () => { },
+			next: (value: string) => { },
+			error: (error: HttpErrorResponse) => { },
+			complete: () => { }
+		};
+	}
 
 	extractErrorResponse(error: HttpErrorResponse): string {
 		return error.status.toString() + '<br>'
