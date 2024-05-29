@@ -2,7 +2,7 @@
 
 <form [formGroup]="untypedFormGroup" (submit)="submit()" class="form-area">
 
-	<fieldset>
+	<fieldset [disabled]="!ready">
 
 		<legend>Área</legend>
 
@@ -21,7 +21,7 @@
 			<input id="highlighted" type="checkbox" formControlName="highlighted" /> Highlighted
 		</label>
 
-		<button type="submit" class="primary">
+		<button type="submit" class="submit-area">
 			{{ viewExpected == EnumViewExpected.create ? 'Criar Área' : 'Atualizar Área' }}
 		</button>
 

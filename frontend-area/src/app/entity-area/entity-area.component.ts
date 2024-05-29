@@ -47,6 +47,8 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	idArea: number = -1;
 
+	ready: boolean =  false;
+
 	constructor() {
 		super();
 
@@ -67,11 +69,10 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	}
 
 	viewCreate() {
+		this.ready = true;
 	}
 
 	viewUpdateById() {
-		this.idArea = parseInt(this.getPathParam('id'), 10);
-
 		const actionsResponseTyped: ActionsResponseTyped<DtoArea> = {
 			disabled: () => {
 				this.countDisabled++;
@@ -81,15 +82,18 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 				console.log("findById -> next:");
 				console.log(value);
 
-				if (value)
+				if (value) {
+					this.idArea = value.idArea;
 					this.untypedFormGroup.setValue({
 						rawData: value.rawData,
 						uniqueData: value.uniqueData,
 						highlighted: value?.highlighted
 					});
+					this.ready = true;
+				}
 			},
 			error: (error: HttpErrorResponse) => {
-				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));				
 			},
 			complete: () => { }
 		}
@@ -97,8 +101,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		this.countDisabled = 0;
 		this.countFalses = 0;
 
+		const pathParamId = parseInt(this.getPathParam('id'), 10);
 		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponseTyped to use the SAME Machine State.
-			if (!this.areaService.findById(this.idArea, actionsResponseTyped))
+			if (!this.areaService.findById(pathParamId, actionsResponseTyped))
 				this.countFalses++;
 
 		console.log("this.countDisabled = " + this.countDisabled);

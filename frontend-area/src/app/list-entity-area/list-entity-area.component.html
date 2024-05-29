@@ -28,7 +28,7 @@
 				<td>{{dtoArea?.uniqueData}}</td>
 				<td>{{dtoArea?.highlighted}}</td>
 				<td class="fit">
-					<button class="delete" type="button" (click)="removeArea(dtoArea?.idArea ?? -1);$event.stopPropagation();">Delete</button>
+					<button class="delete-area" type="button" (click)="removeArea(dtoArea?.idArea ?? -1);$event.stopPropagation();">Delete</button>
 				</td>
 			</tr>
 		</tbody>
@@ -37,5 +37,5 @@
 </section>
 
 <section>
-	<button class="primary" type="button" (click)="navigate(['/vr']);">Criar Área</button>
+	<button class="create-area" type="button" (click)="navigate(['/vr']);">Criar Área</button>
 </section>
