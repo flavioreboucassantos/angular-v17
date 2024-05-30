@@ -5,7 +5,7 @@ import { ModalActionsResponseComponent } from '../modal-actions-response/modal-a
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { AreaService } from '../area.service';
-import { ActionsResponse, ActionsResponseTyped } from '../base.state-request';
+import { ActionsResponse, ActionsResponseTyped } from '../base.service';
 import { BaseViewComponent } from '../base.view-component';
 import { DtoArea } from '../entity-area/entity-area.component';
 
@@ -32,8 +32,6 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 
 	listDtoArea: DtoArea[] = [];
 	filteredListDtoArea: DtoArea[] = [];
-
-	readonly actionsResponse: ActionsResponse = this.newEmptyActionsResponse();
 
 	private removeFromLists(idArea: number) {
 		this.filteredListDtoArea = this.listDtoArea.filter((dtoArea) => {
@@ -66,7 +64,7 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 		this.countDisabled = 0;
 		this.countFalses = 0;
 
-		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponseTyped to use the SAME Machine State.
+		for (let i = 0; i < 11; i++)
 			if (!this.areaService.findAll(actionsResponseTyped))
 				this.countFalses++;
 
@@ -110,21 +108,24 @@ export class ListEntityAreaComponent extends BaseViewComponent {
 		const rowArea: HTMLElement | null = document.getElementById('idRowArea' + idArea);
 		rowArea?.classList.add('deleting');
 
-		this.actionsResponse.disabled = () => this.countDisabled++;
-		this.actionsResponse.error = (error: HttpErrorResponse) => {
-			this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
-			rowArea?.classList.remove('deleting');
-		};
-		this.actionsResponse.complete = () => {
-			rowArea?.remove();
-			this.removeFromLists(idArea);
-		};
+		const actionsResponse: ActionsResponse = {
+			disabled: () => this.countDisabled++,
+			next: () => { },
+			error: (error: HttpErrorResponse) => {
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
+				rowArea?.classList.remove('deleting');
+			},
+			complete: () => {
+				rowArea?.remove();
+				this.removeFromLists(idArea);
+			}
+		}
 
 		this.countDisabled = 0;
 		this.countFalses = 0;
 
 		for (let i = 0; i < 11; i++)
-			if (!this.areaService.remove(idArea, this.actionsResponse))
+			if (!this.areaService.remove(idArea, actionsResponse))
 				this.countFalses++;
 
 		console.log("this.countDisabled = " + this.countDisabled);

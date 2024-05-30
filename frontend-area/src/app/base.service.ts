@@ -2,37 +2,46 @@ import { PlatformLocation } from "@angular/common";
 import { HttpClient } from '@angular/common/http';
 import { inject } from "@angular/core";
 import { Observable } from "rxjs/internal/Observable";
-import { ActionsResponse, ActionsResponseTyped, BaseStateRequest, CoreDto, Teardown } from "./base.state-request";
+import { BaseStateRequest, KeyStringAny, OutSourceMachineState, Teardown } from "./base.state-request";
 
 /**
+ * Using ActionsResponse:
  * 
- * Using ActionsResponse
+ * There are basically three method of Observable conceptually as below:
  * 
+ * 		next(): this method define that how to process data which is sent by observable.
+ * 		error(): this method define that how to manage error handling activities.
+ * 		complete(): this method define course of action need to perform after the observable has completed producing and emitting data.
  * 
-	There are basically three method of Observable conceptually as below:
-
-	next(): this method define that how to process data which is sent by observable
-
-	error(): this method define that how to manage error handling activities.
-
-	complete(): this method define course of action need to perform after the observable has completed producing and emitting data.
-
-	next() method cannot be executed after the observable has errored or completed.
-
-	next(), error() or complete() method cannot be called after unsubscribe.
-
-	Unsubscribe is called on error or complete to free the resources used by the subscription and the observable.
-
-	Example:
-		some$.subscribe({  
-			next: x => console.log('The next value is: ', x),  
-			error: err => console.error('An error occurred :', err),  
-			complete: () => console.log('There are no more action happen.')  
-		});
-
-	So, next get the latest value from the stream of Observable.
+ * 		next() method cannot be executed after the observable has errored or completed.
+ * 		next(), error() or complete() method cannot be called after unsubscribe.
+ * 		Unsubscribe is called on error or complete to free the resources used by the subscription and the observable.
  * 
+ * 	Example:
+ * 		some$.subscribe({  
+ *				next: x => console.log('The next value is: ', x),  
+ *				error: err => console.error('An error occurred :', err),  
+ *				complete: () => console.log('There are no more action happen.')  
+ *			});
+ * 
+ * 	So, next() get the latest value from the stream of Observable.
  */
+export interface ActionsResponse {
+	disabled: () => void,
+	next: (value: any) => void,
+	error: (error: any) => void,
+	complete: () => void
+}
+
+/**
+ * @see {@link ActionsResponse}
+ */
+export interface ActionsResponseTyped<T> {
+	disabled: () => void,
+	next: (value: T) => void,
+	error: (error: any) => void,
+	complete: () => void
+}
 
 /**
 * @author Flávio Rebouças Santos
@@ -43,7 +52,7 @@ export abstract class BaseService extends BaseStateRequest {
 	private readonly platformLocation: PlatformLocation = inject(PlatformLocation);
 
 	/*
-		MONTAR BASE URL REST API: A Navegação de Routes não deve ser usada como path para REST.
+		MONTAR BASE URL REST API: A Navegação de @angular/router/Routes não deve ser usada como path para REST.
 	*/
 
 	private readonly nameService = '/area';
@@ -72,18 +81,22 @@ export abstract class BaseService extends BaseStateRequest {
 	/**
 	 * T means Body Type for Responding.
 	 * There is no Body Type for Requesting.
+	 * 
+	 * - The get method must use the Angular Cache before reaching this step;
+	 * performing teardown from the first method called, including the view step.
+	 * 
 	 * @param url 
 	 * @param actionsResponseTyped This method changes or generates a property of State Disabled at the actionsResponseTyped, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
-	protected getT<T>(url: string, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
-		const teardown: Teardown | null = this.tryRequest(actionsResponseTyped);
+	protected getT<T>(outSourceMachineState: OutSourceMachineState, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
+		const teardown: Teardown | null = this.tryRequest(outSourceMachineState);
 		if (teardown === null) {
 			actionsResponseTyped.disabled();
 			return false;
 		} else {
-			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.get<T>(url, { observe: 'body', responseType: 'json' });
-			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped);
+			const observableOfResponseBodyInRequestedType: Observable<T> = this.httpClient.get<T>(outSourceMachineState.url, { observe: 'body', responseType: 'json' });
+			observableOfResponseBodyInRequestedType.subscribe(actionsResponseTyped).add(teardown);
 			return true;
 		}
 	}
@@ -95,7 +108,7 @@ export abstract class BaseService extends BaseStateRequest {
 	 * @param actionsResponseTyped 
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
-	protected postTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
+	protected postTT<T extends KeyStringAny>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
 		const teardown: Teardown | null = this.tryRequest(origin);
 		if (teardown === null) {
 			actionsResponseTyped.disabled();
@@ -116,7 +129,7 @@ export abstract class BaseService extends BaseStateRequest {
 	 * @param actionsResponseTyped 
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
-	protected putTT<T extends CoreDto>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
+	protected putTT<T extends KeyStringAny>(url: string, origin: any, actionsResponseTyped: ActionsResponseTyped<T>): boolean {
 		const teardown: Teardown | null = this.tryRequest(origin);
 		if (teardown === null) {
 			actionsResponseTyped.disabled();
@@ -135,14 +148,14 @@ export abstract class BaseService extends BaseStateRequest {
 	 * @param actionsResponse This method changes or generates a property of State Disabled at the actionsResponse, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
-	protected delete(url: string, actionsResponse: ActionsResponse): boolean {
-		const teardown: Teardown | null = this.tryRequest(actionsResponse);
+	protected delete(outSourceMachineState: OutSourceMachineState, actionsResponse: ActionsResponse): boolean {
+		const teardown: Teardown | null = this.tryRequest(outSourceMachineState);
 		if (teardown === null) {
 			actionsResponse.disabled();
 			return false;
 		} else {
-			const observableStringOfResponseBodyInString: Observable<string> = this.httpClient.delete(url, { observe: 'body', responseType: 'text' });
-			observableStringOfResponseBodyInString.subscribe(actionsResponse);
+			const observableStringOfResponseBodyInString: Observable<string> = this.httpClient.delete(outSourceMachineState.url, { observe: 'body', responseType: 'text' });
+			observableStringOfResponseBodyInString.subscribe(actionsResponse).add(teardown);
 			return true;
 		}
 	}

@@ -3,7 +3,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AfterContentInit, Component, ViewChild, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
 import { AreaService } from '../area.service';
-import { ActionsResponseTyped, CoreDto } from '../base.state-request';
+import { ActionsResponseTyped } from '../base.service';
+import { KeyStringAny } from '../base.state-request';
 import { BaseViewComponent, ViewExpected } from '../base.view-component';
 import { ModalActionsResponseComponent } from '../modal-actions-response/modal-actions-response.component';
 
@@ -47,7 +48,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	idArea: number = -1;
 
-	ready: boolean =  false;
+	ready: boolean = false;
 
 	constructor() {
 		super();
@@ -93,7 +94,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 				}
 			},
 			error: (error: HttpErrorResponse) => {
-				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));				
+				this.modalActionsResponse?.open('error:', this.extractErrorResponse(error));
 			},
 			complete: () => { }
 		}
@@ -102,7 +103,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		this.countFalses = 0;
 
 		const pathParamId = parseInt(this.getPathParam('id'), 10);
-		for (let i = 0; i < 11; i++) // Reuses the SAME actionsResponseTyped to use the SAME Machine State.
+		for (let i = 0; i < 11; i++)
 			if (!this.areaService.findById(pathParamId, actionsResponseTyped))
 				this.countFalses++;
 
@@ -110,7 +111,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		console.log("this.countFalses = " + this.countFalses);
 	}
 
-	doSubmit(dtoAndMachineState: CoreDto): void;
+	doSubmit(dtoAndMachineState: KeyStringAny): void;
 	doSubmit(formGroupLikeMachineState: UntypedFormGroup): void;
 	doSubmit(origin: any): void {
 		let idAreaCreated: number;
@@ -151,9 +152,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 	}
 
 	submitTest1() {
-		console.log('1) CoreDto <= Machine State');
+		console.log('1) KeyStringAny <= Machine State');
 
-		const dtoAndMachineState: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue())
+		const dtoAndMachineState: KeyStringAny = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue())
 		for (let i = 0; i < 11; i++)
 			this.doSubmit(dtoAndMachineState);
 		console.log(dtoAndMachineState);
@@ -174,9 +175,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	submitTest3_1() {
 
-		console.log('3_1) CoreDto <= CoreDto');
+		console.log('3_1) KeyStringAny <= KeyStringAny');
 
-		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		const dtoAndMachineState1: KeyStringAny = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
 
 		this.areaService.setOnOffTeardown(dtoAndMachineState1, true); // try false
 
@@ -186,7 +187,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		console.log(dtoAndMachineState1);
 
 		// Live Update
-		const dtoAndMachineState2: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		const dtoAndMachineState2: KeyStringAny = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
 
 		this.areaService.shareAndAppendTargetStateRequest(dtoAndMachineState2, dtoAndMachineState1);
 		this.doSubmit(dtoAndMachineState2); // Assert Rejection: 2 Submit(s), 1 Request(s)
@@ -195,12 +196,12 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	submitTest3_2() {
 
-		console.log('3_2) CoreDto <= UntypedFormGroup');
+		console.log('3_2) KeyStringAny <= UntypedFormGroup');
 
 		this.doSubmit(this.untypedFormGroup); // Assert Acceptance: 1 Submit(s), 1 Request(s)		
 
 		// Live Update		
-		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		const dtoAndMachineState1: KeyStringAny = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
 
 		this.areaService.shareAndAppendTargetStateRequest(dtoAndMachineState1, this.untypedFormGroup);
 		this.doSubmit(dtoAndMachineState1); // Assert Rejection: 2 Submit(s), 1 Request(s)
@@ -216,9 +217,9 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 
 	submitTest3_4() {
 
-		console.log('3_4) UntypedFormGroup <= CoreDto');
+		console.log('3_4) UntypedFormGroup <= KeyStringAny');
 
-		const dtoAndMachineState1: CoreDto = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
+		const dtoAndMachineState1: KeyStringAny = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
 
 		this.areaService.setOnOffTeardown(dtoAndMachineState1, true); // try false
 

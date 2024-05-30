@@ -1,24 +1,13 @@
 import { FormControl, UntypedFormGroup } from "@angular/forms";
 
-export interface CoreDto {
+export interface OutSourceMachineState {
+	url: string,
+	[key: string]: any
+}
+
+export interface KeyStringAny {
 	[key: string]: any
 };
-
-export interface ActionsResponse {
-	disabled: () => void,
-	next: (value: any) => void,
-	error: (error: any) => void,
-	complete: () => void
-}
-
-export interface ActionsResponseTyped<T> {
-	disabled: () => void,
-	next: (value: T) => void,
-	error: (error: any) => void,
-	complete: () => void
-}
-
-export type Teardown = (() => void);
 
 export type StateRequestTarget = UntypedFormGroup;
 
@@ -27,6 +16,8 @@ interface StateRequest {
 	onOffTeardown: boolean,
 	target?: Map<StateRequestTarget, null>;
 }
+
+export type Teardown = (() => void);
 
 /**
  * @author Flávio Rebouças Santos
@@ -46,7 +37,7 @@ export abstract class BaseStateRequest {
 	// prepareAndGetStateRequestFor...
 	// ################################################################
 
-	private prepareAndGetStateRequestForKeyStringAny(originKeyStringAny: CoreDto): StateRequest {
+	private prepareAndGetStateRequestForKeyStringAny(originKeyStringAny: KeyStringAny): StateRequest {
 		if (originKeyStringAny[this.KEY_OF_STATE_REQUEST] === undefined) {
 			const stateRequest: StateRequest = {
 				disabled: false,
@@ -83,7 +74,7 @@ export abstract class BaseStateRequest {
 		// !!! Impedir que this.enableStateRequest inicie: Durante a leitura de stateRequest.disabled && Durante this.doDisableStateRequest
 		// !!! Para prevenir que o alvo permaneça disabled depois de this.enableStateRequest	
 		if (stateRequest.disabled)
-			this.doDisableStateRequest(target);
+			this.doDisableStateRequestTarget(target);
 	}
 
 	private appendTargetAtStateRequest(stateRequest: StateRequest, target: StateRequestTarget): StateRequest {
@@ -106,7 +97,7 @@ export abstract class BaseStateRequest {
 		}
 	}
 
-	private doDisableStateRequest(stateRequestTarget: StateRequestTarget) {
+	private doDisableStateRequestTarget(stateRequestTarget: StateRequestTarget) {
 		switch (stateRequestTarget.constructor) {
 			case UntypedFormGroup:
 				(stateRequestTarget as UntypedFormGroup).disable();
@@ -115,8 +106,8 @@ export abstract class BaseStateRequest {
 	}
 
 	private disableStateRequest(stateRequest: StateRequest) {
-		stateRequest.disabled = true;
-		this.iterateOverStateRequestTargetMap(stateRequest, (value, stateRequestTarget) => this.doDisableStateRequest(stateRequestTarget));
+		stateRequest.disabled = true;		
+		this.iterateOverStateRequestTargetMap(stateRequest, (value, stateRequestTarget) => this.doDisableStateRequestTarget(stateRequestTarget));
 	}
 
 	private enableStateRequest(stateRequest: StateRequest) {
@@ -134,8 +125,8 @@ export abstract class BaseStateRequest {
 	// tryRequestFor... (BY TRY REQUEST)
 	// ################################################################
 
-	private tryRequestForKeyStringAny(originKeyStringAny: CoreDto): Teardown | null {
-		const stateRequest: StateRequest = this.prepareAndGetStateRequestForKeyStringAny(originKeyStringAny);
+	private tryRequestForKeyStringAny(originKeyStringAny: KeyStringAny): Teardown | null {
+		const stateRequest: StateRequest = this.prepareAndGetStateRequestForKeyStringAny(originKeyStringAny);		
 		if (stateRequest.disabled === false) {
 			// this.appendTargetAtStateRequest(stateRequest, originKeyStringAny);
 
@@ -175,7 +166,7 @@ export abstract class BaseStateRequest {
 	// setStateRequestFor... (BY SHARE AND APPEND TARGET STATE REQUEST)
 	// ################################################################
 
-	private setStateRequestForKeyStringAny(originKeyStringAny: CoreDto, stateRequest: StateRequest): StateRequest {
+	private setStateRequestForKeyStringAny(originKeyStringAny: KeyStringAny, stateRequest: StateRequest): StateRequest {
 		originKeyStringAny[this.KEY_OF_STATE_REQUEST] = stateRequest;
 		return stateRequest;
 	}
@@ -191,7 +182,7 @@ export abstract class BaseStateRequest {
 	// getAndDeleteStateRequestFor... (BY PUBLIC)
 	// ################################################################
 
-	private getAndDeleteStateRequestForKeyStringAny(originKeyStringAny: CoreDto): StateRequest {
+	private getAndDeleteStateRequestForKeyStringAny(originKeyStringAny: KeyStringAny): StateRequest {
 		const stateRequest: StateRequest = originKeyStringAny[this.KEY_OF_STATE_REQUEST];
 		delete originKeyStringAny[this.KEY_OF_STATE_REQUEST];
 		return stateRequest;
@@ -239,7 +230,7 @@ export abstract class BaseStateRequest {
 		return null;
 	}
 
-	protected generateDto<T extends CoreDto>(origin: any): T {
+	protected generateDto<T extends KeyStringAny>(origin: any): T {
 		let newDto: T;
 		switch (origin.constructor) {
 			case Object:
@@ -286,10 +277,10 @@ export abstract class BaseStateRequest {
 	 * @param originTarget Appends originTarget to the shared StateRequest.
 	 * @param originSource 
 	 */
-	public shareAndAppendTargetStateRequest(originTarget: CoreDto, originSource: CoreDto): CoreDto;
-	public shareAndAppendTargetStateRequest(originTarget: CoreDto, originSource: UntypedFormGroup): CoreDto;
+	public shareAndAppendTargetStateRequest(originTarget: KeyStringAny, originSource: KeyStringAny): KeyStringAny;
+	public shareAndAppendTargetStateRequest(originTarget: KeyStringAny, originSource: UntypedFormGroup): KeyStringAny;
 	public shareAndAppendTargetStateRequest(originTarget: UntypedFormGroup, originSource: UntypedFormGroup): UntypedFormGroup;
-	public shareAndAppendTargetStateRequest(originTarget: UntypedFormGroup, originSource: CoreDto): UntypedFormGroup;
+	public shareAndAppendTargetStateRequest(originTarget: UntypedFormGroup, originSource: KeyStringAny): UntypedFormGroup;
 	public shareAndAppendTargetStateRequest(originTarget: any, originSource: any): any {
 		switch (originTarget.constructor) {
 			case Object:
