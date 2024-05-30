@@ -83,9 +83,9 @@ export abstract class BaseService extends BaseStateRequest {
 	 * 
 	 * There is no Body Type for Requesting.
 	 * 
-	 * - The get method must use the Angular Cache before reaching this step;
+	 * - The GET request must use the Angular Cache before reaching this step;
 	 * performing teardown from the first method called, including the view step.
-	 * @param outSourceMachineState This method changes or generates a property of StateRequest at the outSourceMachineState, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @param outSourceMachineState This method changes or generates a property at the outSourceMachineState, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponseTyped 
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
@@ -104,7 +104,7 @@ export abstract class BaseService extends BaseStateRequest {
 	/**
 	 * TT means Same Body Type for Requesting and Responding.
 	 * @param url 
-	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @param origin This method changes or generates a property at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponseTyped 
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
@@ -125,7 +125,7 @@ export abstract class BaseService extends BaseStateRequest {
 	/**	
 	 * TT means Same Body Type for Requesting and Responding.
 	 * @param url 
-	 * @param origin This method changes or generates a property of State Disabled at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @param origin This method changes or generates a property at the origin, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponseTyped 
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
@@ -144,7 +144,7 @@ export abstract class BaseService extends BaseStateRequest {
 
 	/**
 	 * There is no Body Type for Requesting or Responding.
-	 * @param outSourceMachineState This method changes or generates a property of StateRequest at the outSourceMachineState, to restrict that only one request is performed simultaneously, until this execution is teardown.
+	 * @param outSourceMachineState This method changes or generates a property at the outSourceMachineState, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponse 
 	 * @returns true If progressed with the request. false If the request was restricted.
 	 */
