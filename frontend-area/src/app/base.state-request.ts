@@ -73,7 +73,7 @@ export abstract class BaseStateRequest {
 	private promiseFirstTeardown(stateRequest: StateRequest, target: StateRequestTarget) {
 		// !!! Impedir que this.enableStateRequest inicie: Durante a leitura de stateRequest.disabled && Durante this.doDisableStateRequest
 		// !!! Para prevenir que o alvo permaneça disabled depois de this.enableStateRequest	
-		if (stateRequest.disabled)
+		if (stateRequest.onOffTeardown && stateRequest.disabled)
 			this.doDisableStateRequestTarget(target);
 	}
 
@@ -262,7 +262,8 @@ export abstract class BaseStateRequest {
 	}
 
 	/**
-	 * While the Teardown operation is responsible for enabling and disabling the target, this method is responsible for defining whether Teardown should occur in the current origin state.
+	 * While the Teardown operation is responsible for enabling and disabling the target,
+	 * this method is responsible for defining whether Teardown should occur in the current origin state.
 	 * @param origin The Target.
 	 * @param onOffTeardown true is On, false is Off. Use setDefaultOnOffTeardown to define Default.
 	 */

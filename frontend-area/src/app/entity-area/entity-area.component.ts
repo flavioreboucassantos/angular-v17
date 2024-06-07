@@ -203,6 +203,8 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		// Live Update		
 		const dtoAndMachineState1: KeyStringAny = this.copyAllEnumerable1({}, this.untypedFormGroup.getRawValue());
 
+		this.areaService.setOnOffTeardown(dtoAndMachineState1, true); // try false
+
 		this.areaService.shareAndAppendTargetStateRequest(dtoAndMachineState1, this.untypedFormGroup);
 		this.doSubmit(dtoAndMachineState1); // Assert Rejection: 2 Submit(s), 1 Request(s)
 		console.log(dtoAndMachineState1);
@@ -243,7 +245,7 @@ export class EntityAreaComponent extends BaseViewComponent implements AfterConte
 		this.countDisabled = 0;
 		this.countFalses = 0;
 
-		this.areaService.setDefaultOnOffTeardown(true);
+		this.areaService.setDefaultOnOffTeardown(true); // try false
 
 		// this.submitTest1();
 		// this.submitTest2();
