@@ -84,8 +84,8 @@ export abstract class BaseService extends BaseStateRequest {
 	 * There is no Body Type for Requesting.
 	 * 
 	 * - The GET request must use the Angular Cache before reaching this step;
-	 * performing teardown synchronously, without request waiting time;
-	 * in the same call in which this method is requested.
+	 * performing teardown synchronously, without waiting time;
+	 * in the same call which is requested.
 	 * @param outSourceMachineState This method changes or generates a property at the outSourceMachineState, to restrict that only one request is performed simultaneously, until this execution is teardown.
 	 * @param actionsResponseTyped 
 	 * @returns true If progressed with the request. false If the request was restricted.
